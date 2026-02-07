@@ -40,14 +40,9 @@ class CheckoutController extends GetxController {
     try {
       isLoading.value = true;
       final items = await CartService.getCartItems();
-      if (items != null) {
-        cartItems.value = items;
-        calculateTotal();
-      } else {
-        cartItems.value = [];
-      }
+      cartItems.value = items;
+      calculateTotal();
     } catch (e) {
-      print('Error loading cart: $e');
       Get.snackbar('Error', 'Gagal memuat data: $e');
       cartItems.value = [];
     } finally {
@@ -61,8 +56,6 @@ class CheckoutController extends GetxController {
 
     try {
       for (var item in cartItems) {
-        if (item == null) continue;
-
         final promoAktif = item['promo_aktif'];
         double harga = 0;
 
@@ -81,7 +74,6 @@ class CheckoutController extends GetxController {
       totalHarga.value = total;
       calculatePaymentAmount();
     } catch (e) {
-      print('Error calculating total: $e');
       totalHarga.value = 0;
       totalPembayaran.value = 0;
     }
@@ -184,27 +176,28 @@ class CheckoutController extends GetxController {
       isLoading.value = true;
 
       // Prepare items for API
-      final items = cartItems.map((item) {
-        if (item == null) return null;
+      final items = cartItems
+          .map((item) {
+            final promoAktif = item['promo_aktif'];
+            double harga = 0;
 
-        final promoAktif = item['promo_aktif'];
-        double harga = 0;
+            if (promoAktif != null && promoAktif['harga_diskon'] != null) {
+              harga = _parseDouble(promoAktif['harga_diskon']);
+            } else if (item['harga'] != null) {
+              harga = _parseDouble(item['harga']);
+            }
 
-        if (promoAktif != null && promoAktif['harga_diskon'] != null) {
-          harga = _parseDouble(promoAktif['harga_diskon']);
-        } else if (item['harga'] != null) {
-          harga = _parseDouble(item['harga']);
-        }
+            final layananId = item['id'];
+            if (layananId == null) return null;
 
-        final layananId = item['id'];
-        if (layananId == null) return null;
-
-        return {
-          'layanan_id': layananId,
-          'qty': _parseInt(item['quantity']) ?? 1,
-          'harga': harga,
-        };
-      }).where((item) => item != null).toList();
+            return {
+              'layanan_id': layananId,
+              'qty': _parseInt(item['quantity']) ?? 1,
+              'harga': harga,
+            };
+          })
+          .where((item) => item != null)
+          .toList();
 
       if (items.isEmpty) {
         Get.snackbar('Error', 'Tidak ada item valid untuk checkout');
@@ -212,8 +205,11 @@ class CheckoutController extends GetxController {
       }
 
       // Format date and time
-      final String formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate.value);
-      final String formattedTime = '${selectedTime.value.hour.toString().padLeft(2, '0')}:${selectedTime.value.minute.toString().padLeft(2, '0')}';
+      final String formattedDate = DateFormat(
+        'yyyy-MM-dd',
+      ).format(selectedDate.value);
+      final String formattedTime =
+          '${selectedTime.value.hour.toString().padLeft(2, '0')}:${selectedTime.value.minute.toString().padLeft(2, '0')}';
 
       // Prepare payload
       final payload = {
@@ -226,8 +222,6 @@ class CheckoutController extends GetxController {
           'bank': selectedBank.value,
       };
 
-      print('Checkout payload: $payload');
-
       // Submit booking
       final result = await _repository.createBooking(payload);
 
@@ -238,13 +232,10 @@ class CheckoutController extends GetxController {
         // Navigate to payment page
         _navigateToPaymentPage(result);
       } else {
-        print('Error: ${result.message}');
-        Get.snackbar('Error', result.message ?? 'Terjadi kesalahan');
+        Get.snackbar('Error', result.message);
       }
     } catch (e, stackTrace) {
-      print('Error during checkout: $e');
-      print('Stack trace: $stackTrace');
-      Get.snackbar('Error', 'Terjadi kesalahan: ${e.toString()}');
+      Get.snackbar('Error', 'Terjadi kesalahan: ${e.toString()} $stackTrace');
     } finally {
       isLoading.value = false;
     }
@@ -265,11 +256,8 @@ class CheckoutController extends GetxController {
       } else {
         Get.to(PaymentPage(response: response.toJson())); // or response.toMap()
       }
-
     } catch (e, stackTrace) {
-      print('Error navigating to payment: $e');
-      print('Stack trace: $stackTrace');
-      Get.snackbar('Error', 'Gagal membuka halaman pembayaran: $e');
+      Get.snackbar('Error', 'Gagal membuka halaman pembayaran: $e $stackTrace');
     }
   }
 

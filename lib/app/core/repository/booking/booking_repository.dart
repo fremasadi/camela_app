@@ -29,6 +29,8 @@ class BookingRepository {
       );
 
       final Map<String, dynamic> data = json.decode(response.body);
+      print('token $token');
+      print('data ${json.encode(payload)}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return BookingModel.fromJson(data);

@@ -42,7 +42,7 @@ class CheckoutView extends GetView<CheckoutController> {
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -61,8 +61,10 @@ class CheckoutView extends GetView<CheckoutController> {
                     _buildInfoRow(
                       icon: Icons.calendar_today,
                       label: 'Tanggal Booking',
-                      value: DateFormat('dd MMMM yyyy', 'id_ID')
-                          .format(controller.selectedDate.value),
+                      value: DateFormat(
+                        'dd MMMM yyyy',
+                        'id_ID',
+                      ).format(controller.selectedDate.value),
                       onTap: () => controller.selectDate(context),
                     ),
                     Divider(height: 24.h),
@@ -87,7 +89,7 @@ class CheckoutView extends GetView<CheckoutController> {
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -131,7 +133,7 @@ class CheckoutView extends GetView<CheckoutController> {
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -153,7 +155,8 @@ class CheckoutView extends GetView<CheckoutController> {
                           title: Text(controller.getPaymentMethodName(method)),
                           value: method,
                           groupValue: controller.selectedPaymentMethod.value,
-                          onChanged: (value) => controller.setPaymentMethod(value!),
+                          onChanged: (value) =>
+                              controller.setPaymentMethod(value!),
                           activeColor: AppColor.primary,
                         );
                       }).toList(),
@@ -161,14 +164,18 @@ class CheckoutView extends GetView<CheckoutController> {
 
                     // Bank Selection (only for Bank Transfer)
                     Obx(() {
-                      if (controller.selectedPaymentMethod.value == 'BANK_TRANSFER') {
+                      if (controller.selectedPaymentMethod.value ==
+                          'BANK_TRANSFER') {
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             SizedBox(height: 16.h),
                             Text(
                               'Pilih Bank',
-                              style: AppFont.medium(14.sp, color: AppColor.black),
+                              style: AppFont.medium(
+                                14.sp,
+                                color: AppColor.black,
+                              ),
                             ),
                             SizedBox(height: 8.h),
                             DropdownButtonFormField<String>(
@@ -206,7 +213,7 @@ class CheckoutView extends GetView<CheckoutController> {
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -227,7 +234,10 @@ class CheckoutView extends GetView<CheckoutController> {
                       children: [
                         Text(
                           'Total Item',
-                          style: AppFont.regular(14.sp, color: Colors.grey[600]),
+                          style: AppFont.regular(
+                            14.sp,
+                            color: Colors.grey[600],
+                          ),
                         ),
                         Text(
                           '${controller.cartItems.length} layanan',
@@ -243,7 +253,10 @@ class CheckoutView extends GetView<CheckoutController> {
                       children: [
                         Text(
                           'Total Harga',
-                          style: AppFont.regular(14.sp, color: Colors.grey[600]),
+                          style: AppFont.regular(
+                            14.sp,
+                            color: Colors.grey[600],
+                          ),
                         ),
                         Text(
                           'Rp.${PriceFormatter.price(controller.totalHarga.value)}',
@@ -259,11 +272,17 @@ class CheckoutView extends GetView<CheckoutController> {
                         children: [
                           Text(
                             'DP 50%',
-                            style: AppFont.regular(14.sp, color: Colors.grey[600]),
+                            style: AppFont.regular(
+                              14.sp,
+                              color: Colors.grey[600],
+                            ),
                           ),
                           Text(
                             'Rp.${PriceFormatter.price(controller.totalPembayaran.value)}',
-                            style: AppFont.medium(14.sp, color: AppColor.primary),
+                            style: AppFont.medium(
+                              14.sp,
+                              color: AppColor.primary,
+                            ),
                           ),
                         ],
                       ),
@@ -292,49 +311,51 @@ class CheckoutView extends GetView<CheckoutController> {
           ),
         );
       }),
-      bottomNavigationBar: Obx(() => Container(
-        padding: EdgeInsets.all(16.sp),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -5),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: controller.isLoading.value
-                  ? null
-                  : () => controller.processCheckout(),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColor.primary,
-                padding: EdgeInsets.symmetric(vertical: 14.sp),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+      bottomNavigationBar: Obx(
+        () => Container(
+          padding: EdgeInsets.all(16.sp),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, -5),
               ),
-              child: controller.isLoading.value
-                  ? SizedBox(
-                height: 20.h,
-                width: 20.w,
-                child: const CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 2,
+            ],
+          ),
+          child: SafeArea(
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: controller.isLoading.value
+                    ? null
+                    : () => controller.processCheckout(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColor.primary,
+                  padding: EdgeInsets.symmetric(vertical: 14.sp),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-              )
-                  : Text(
-                'Bayar Sekarang',
-                style: AppFont.bold(16.sp, color: Colors.white),
+                child: controller.isLoading.value
+                    ? SizedBox(
+                        height: 20.h,
+                        width: 20.w,
+                        child: const CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : Text(
+                        'Bayar Sekarang',
+                        style: AppFont.bold(16.sp, color: Colors.white),
+                      ),
               ),
             ),
           ),
         ),
-      )),
+      ),
     );
   }
 
@@ -378,53 +399,55 @@ class CheckoutView extends GetView<CheckoutController> {
     required String subtitle,
     required String value,
   }) {
-    return Obx(() => InkWell(
-      onTap: () => controller.changePaymentType(value),
-      child: Container(
-        padding: EdgeInsets.all(12.sp),
-        decoration: BoxDecoration(
-          border: Border.all(
+    return Obx(
+      () => InkWell(
+        onTap: () => controller.changePaymentType(value),
+        child: Container(
+          padding: EdgeInsets.all(12.sp),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: controller.paymentType.value == value
+                  ? AppColor.primary
+                  : Colors.grey[300]!,
+              width: controller.paymentType.value == value ? 2 : 1,
+            ),
+            borderRadius: BorderRadius.circular(8),
             color: controller.paymentType.value == value
-                ? AppColor.primary
-                : Colors.grey[300]!,
-            width: controller.paymentType.value == value ? 2 : 1,
+                ? AppColor.primary.withValues(alpha: 0.05)
+                : Colors.white,
           ),
-          borderRadius: BorderRadius.circular(8),
-          color: controller.paymentType.value == value
-              ? AppColor.primary.withOpacity(0.05)
-              : Colors.white,
-        ),
-        child: Row(
-          children: [
-            Radio<String>(
-              value: value,
-              groupValue: controller.paymentType.value,
-              onChanged: (val) {
-                if (val != null) {
-                  controller.changePaymentType(val);
-                }
-              },
-              activeColor: AppColor.primary,
-            ),
-            SizedBox(width: 8.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: AppFont.bold(14.sp, color: AppColor.black),
-                  ),
-                  Text(
-                    subtitle,
-                    style: AppFont.regular(12.sp, color: Colors.grey[600]),
-                  ),
-                ],
+          child: Row(
+            children: [
+              Radio<String>(
+                value: value,
+                groupValue: controller.paymentType.value,
+                onChanged: (val) {
+                  if (val != null) {
+                    controller.changePaymentType(val);
+                  }
+                },
+                activeColor: AppColor.primary,
               ),
-            ),
-          ],
+              SizedBox(width: 8.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: AppFont.bold(14.sp, color: AppColor.black),
+                    ),
+                    Text(
+                      subtitle,
+                      style: AppFont.regular(12.sp, color: Colors.grey[600]),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-    ));
+    );
   }
 }

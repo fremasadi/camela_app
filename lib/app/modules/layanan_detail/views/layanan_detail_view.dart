@@ -108,8 +108,9 @@ class LayananDetailView extends GetView<LayananDetailController> {
                                   },
                                   loadingBuilder:
                                       (context, child, loadingProgress) {
-                                        if (loadingProgress == null)
+                                        if (loadingProgress == null) {
                                           return child;
+                                        }
                                         return Container(
                                           color: Colors.grey[200],
                                           child: Center(
@@ -150,7 +151,7 @@ class LayananDetailView extends GetView<LayananDetailController> {
                               end: Alignment.bottomCenter,
                               colors: [
                                 Colors.transparent,
-                                Colors.black.withOpacity(0.7),
+                                Colors.black.withValues(alpha: 0.7),
                               ],
                             ),
                           ),
@@ -184,7 +185,7 @@ class LayananDetailView extends GetView<LayananDetailController> {
                                         controller.currentImageIndex.value ==
                                             index
                                         ? Colors.white
-                                        : Colors.white.withOpacity(0.4),
+                                        : Colors.white.withValues(alpha: 0.4),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                 ),
@@ -210,7 +211,7 @@ class LayananDetailView extends GetView<LayananDetailController> {
                               borderRadius: BorderRadius.circular(8),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.2),
+                                  color: Colors.black.withValues(alpha: 0.2),
                                   blurRadius: 8,
                                   offset: const Offset(0, 2),
                                 ),
@@ -237,7 +238,7 @@ class LayananDetailView extends GetView<LayananDetailController> {
                                 vertical: 6.sp,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.6),
+                                color: Colors.black.withValues(alpha: 0.6),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
@@ -277,7 +278,7 @@ class LayananDetailView extends GetView<LayananDetailController> {
                           vertical: 6.sp,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColor.primary.withOpacity(0.1),
+                          color: AppColor.primary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -368,7 +369,7 @@ class LayananDetailView extends GetView<LayananDetailController> {
             color: Colors.white,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, -5),
               ),
@@ -405,9 +406,12 @@ class LayananDetailView extends GetView<LayananDetailController> {
     return Container(
       padding: EdgeInsets.all(16.sp),
       decoration: BoxDecoration(
-        color: AppColor.primary.withOpacity(0.05),
+        color: AppColor.primary.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColor.primary.withOpacity(0.2), width: 1),
+        border: Border.all(
+          color: AppColor.primary.withValues(alpha: 0.2),
+          width: 1,
+        ),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -463,9 +467,9 @@ class LayananDetailView extends GetView<LayananDetailController> {
     return Container(
       padding: EdgeInsets.all(16.sp),
       decoration: BoxDecoration(
-        color: Colors.red.withOpacity(0.05),
+        color: Colors.red.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.red.withOpacity(0.2), width: 1),
+        border: Border.all(color: Colors.red.withValues(alpha: 0.2), width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

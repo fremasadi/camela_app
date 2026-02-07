@@ -6,17 +6,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/utils/date_converter.dart';
 import '../../../core/utils/date_coverter.dart';
 import '../../../core/utils/firebase_service.dart';
 import '../../../core/utils/price_converter.dart';
 import '../../base/views/base_view.dart';
 
-
 class GopayPaymentPage extends StatefulWidget {
-  const GopayPaymentPage({
-    super.key,
-    required this.response,
-  });
+  const GopayPaymentPage({super.key, required this.response});
 
   final Map<String, dynamic> response;
 
@@ -53,12 +50,6 @@ class _GopayPaymentPageState extends State<GopayPaymentPage> {
         });
       }
     });
-  }
-
-  String _formatTime(int seconds) {
-    int minutes = seconds ~/ 60;
-    int remainingSeconds = seconds % 60;
-    return '$minutes:${remainingSeconds.toString().padLeft(2, '0')}';
   }
 
   Future<void> _launchGoPay() async {
@@ -111,9 +102,7 @@ class _GopayPaymentPageState extends State<GopayPaymentPage> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColor.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         title: Text(
           'Error',
           style: TextStyle(
@@ -122,10 +111,7 @@ class _GopayPaymentPageState extends State<GopayPaymentPage> {
             color: Colors.red,
           ),
         ),
-        content: Text(
-          message,
-          style: TextStyle(fontSize: 12.sp),
-        ),
+        content: Text(message, style: TextStyle(fontSize: 12.sp)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -165,11 +151,12 @@ class _GopayPaymentPageState extends State<GopayPaymentPage> {
 
       final paymentGatewayResponse = payment['payment_gateway_response'];
 
-
-// Aman dari error JSON, opsional saja sekarang
+      // Aman dari error JSON, opsional saja sekarang
       dynamic parsedResponse = {};
       try {
-        if (paymentGatewayResponse != null && paymentGatewayResponse is String && paymentGatewayResponse.isNotEmpty) {
+        if (paymentGatewayResponse != null &&
+            paymentGatewayResponse is String &&
+            paymentGatewayResponse.isNotEmpty) {
           parsedResponse = jsonDecode(paymentGatewayResponse);
 
           if (parsedResponse is String) {
@@ -180,24 +167,22 @@ class _GopayPaymentPageState extends State<GopayPaymentPage> {
         parsedResponse = {};
       }
 
-// SET VALUE FIXED DARI DATABASE
+      // SET VALUE FIXED DARI DATABASE
       payment['payment_deeplink'] = payment['deeplink_url'];
       payment['payment_qr_url'] = payment['qr_url'];
 
-
       // ✅ Prioritas: gunakan kolom langsung dari database
-      payment['payment_deeplink'] = payment['deeplink_url'] ??
-          payment['payment_url'];
+      payment['payment_deeplink'] =
+          payment['deeplink_url'] ?? payment['payment_url'];
       payment['payment_qr_url'] = payment['qr_url'];
 
       // ✅ Fallback: parse dari actions jika tidak ada
-      if ((payment['payment_deeplink'] == null || payment['payment_qr_url'] == null) &&
+      if ((payment['payment_deeplink'] == null ||
+              payment['payment_qr_url'] == null) &&
           parsedResponse['actions'] != null) {
-
         if (payment['payment_deeplink'] == null) {
-          final deeplink = parsedResponse['actions']
-              .firstWhere(
-                (action) => action['name'] == 'deeplink-redirect',
+          final deeplink = parsedResponse['actions'].firstWhere(
+            (action) => action['name'] == 'deeplink-redirect',
             orElse: () => null,
           )?['url'];
 
@@ -207,9 +192,8 @@ class _GopayPaymentPageState extends State<GopayPaymentPage> {
         }
 
         if (payment['payment_qr_url'] == null) {
-          final qrAction = parsedResponse['actions']
-              .firstWhere(
-                (action) => action['name'] == 'generate-qr-code',
+          final qrAction = parsedResponse['actions'].firstWhere(
+            (action) => action['name'] == 'generate-qr-code',
             orElse: () => null,
           );
           if (qrAction != null && qrAction['url'] != null) {
@@ -227,7 +211,6 @@ class _GopayPaymentPageState extends State<GopayPaymentPage> {
 
       if (expiryTimeString == null) {
         // Default: 1 jam dari sekarang jika tidak ada expiry
-        final defaultExpiry = DateTime.now().add(const Duration(hours: 1));
         _remainingSeconds = 3600;
       } else {
         try {
@@ -243,7 +226,8 @@ class _GopayPaymentPageState extends State<GopayPaymentPage> {
       startCountdown();
 
       // Set up Firebase listener dengan order_id dari booking
-      final orderId = paymentData['order_id']?.toString() ??
+      final orderId =
+          paymentData['order_id']?.toString() ??
           payment['order_id']?.toString();
 
       if (orderId != null && orderId.isNotEmpty) {
@@ -262,11 +246,10 @@ class _GopayPaymentPageState extends State<GopayPaymentPage> {
         });
       }
     } catch (e, stackTrace) {
-
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error memuat halaman pembayaran: $e'),
+            content: Text('Error memuat halaman pembayaran: $e $stackTrace'),
             backgroundColor: Colors.red,
           ),
         );
@@ -324,7 +307,7 @@ class _GopayPaymentPageState extends State<GopayPaymentPage> {
                   color: AppColor.white,
                 ),
               ),
-            )
+            ),
           ],
         ),
       ),
@@ -345,7 +328,7 @@ class _GopayPaymentPageState extends State<GopayPaymentPage> {
         if (!didPop) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) =>  BaseView()),
+            MaterialPageRoute(builder: (context) => BaseView()),
           );
         }
       },
@@ -355,7 +338,7 @@ class _GopayPaymentPageState extends State<GopayPaymentPage> {
           leading: IconButton(
             onPressed: () => Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) =>  BaseView()),
+              MaterialPageRoute(builder: (context) => BaseView()),
             ),
             icon: Icon(Icons.arrow_back, size: 28.sp, color: AppColor.primary),
           ),
@@ -379,9 +362,13 @@ class _GopayPaymentPageState extends State<GopayPaymentPage> {
                 Row(
                   children: [
                     if (paymentData['status'] == 'pending')
-                      Icon(Icons.timelapse_sharp,size: 28.sp,),
+                      Icon(Icons.timelapse_sharp, size: 28.sp),
                     if (paymentData['status'] == 'confirmed')
-                      Icon(Icons.check_circle, size: 28.sp, color: Colors.green),
+                      Icon(
+                        Icons.check_circle,
+                        size: 28.sp,
+                        color: Colors.green,
+                      ),
 
                     SizedBox(width: 12.w),
                     Expanded(
@@ -411,21 +398,24 @@ class _GopayPaymentPageState extends State<GopayPaymentPage> {
                               fontFamily: 'Medium',
                               color: AppColor.greyPrice,
                             ),
-                          )
+                          ),
                         ],
                       ),
                     ),
 
-                    if (paymentData['status'] == 'pending' && _remainingSeconds > 0)
+                    if (paymentData['status'] == 'pending' &&
+                        _remainingSeconds > 0)
                       Container(
                         padding: EdgeInsets.symmetric(
-                            vertical: 8.sp, horizontal: 16.sp),
+                          vertical: 8.sp,
+                          horizontal: 16.sp,
+                        ),
                         decoration: BoxDecoration(
-                          color: AppColor.primary.withOpacity(0.2),
+                          color: AppColor.primary.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(80.r),
                         ),
                         child: Text(
-                          _formatTime(_remainingSeconds),
+                          formatTime(_remainingSeconds),
                           style: TextStyle(
                             fontSize: 10.sp,
                             fontFamily: 'SemiBold',
@@ -467,7 +457,7 @@ class _GopayPaymentPageState extends State<GopayPaymentPage> {
                             payment['payment_qr_url'],
                             width: 200.w,
                             height: 200.w,
-                            errorBuilder: (_, __, ___) => Container(
+                            errorBuilder: (_, _, _) => Container(
                               width: 200.w,
                               height: 200.w,
                               color: Colors.grey.shade200,
@@ -488,18 +478,18 @@ class _GopayPaymentPageState extends State<GopayPaymentPage> {
                             onPressed: isLaunchingApp ? null : _launchGoPay,
                             icon: isLaunchingApp
                                 ? SizedBox(
-                              width: 20.w,
-                              height: 20.h,
-                              child: const CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            )
+                                    width: 20.w,
+                                    height: 20.h,
+                                    child: const CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
                                 : Icon(
-                              Icons.open_in_new,
-                              color: AppColor.white,
-                              size: 20.sp,
-                            ),
+                                    Icons.open_in_new,
+                                    color: AppColor.white,
+                                    size: 20.sp,
+                                  ),
                             label: Text(
                               isLaunchingApp
                                   ? 'Membuka...'
@@ -540,20 +530,14 @@ class _GopayPaymentPageState extends State<GopayPaymentPage> {
                 SizedBox(height: 8.h),
                 Text(
                   formatCurrency(payment['gross_amount'].toString()),
-                  style: TextStyle(
-                    fontFamily: 'SemiBold',
-                    fontSize: 14.sp,
-                  ),
+                  style: TextStyle(fontFamily: 'SemiBold', fontSize: 14.sp),
                 ),
                 SizedBox(height: 24.h),
 
                 // Instruksi
                 Text(
                   'Instruksi Pembayaran GoPay:',
-                  style: TextStyle(
-                    fontFamily: 'SemiBold',
-                    fontSize: 12.sp,
-                  ),
+                  style: TextStyle(fontFamily: 'SemiBold', fontSize: 12.sp),
                 ),
                 SizedBox(height: 12.h),
                 Text(

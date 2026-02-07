@@ -1,5 +1,6 @@
 import 'package:camela_app/app/modules/history/controllers/history_controller.dart';
 import 'package:camela_app/app/modules/home/controllers/home_controller.dart';
+import 'package:camela_app/app/modules/profile/controllers/edit_password_controller.dart';
 import 'package:camela_app/app/modules/profile/controllers/profile_controller.dart';
 import 'package:get/get.dart';
 
@@ -12,6 +13,6 @@ class BaseBinding extends Bindings {
     Get.put(ProfileController());
     Get.put(HomeController());
     Get.put(HistoryController());
-
+    Get.lazyPut<EditPasswordController>(() => EditPasswordController());
   }
 }

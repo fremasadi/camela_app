@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:camela_app/app/core/repository/auth/register_repository.dart';
-import 'package:camela_app/app/routes/app_pages.dart';
 
 class RegisterController extends GetxController {
   final nameController = TextEditingController();

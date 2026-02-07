@@ -1,7 +1,7 @@
 class AppUrl {
   // 🌐 Base URL utama API kamu
-  static const String baseUrl = 'http://192.168.1.7:8080/api';
-  static const String imageUrl = 'http://192.168.1.7:8080/storage';
+  static const String baseUrl = 'https://camela.underdog.my.id/api';
+  static const String imageUrl = 'https://camela.underdog.my.id/storage';
 
   // 🧩 Auth Endpoints
   static const String login = '$baseUrl/auth/login';

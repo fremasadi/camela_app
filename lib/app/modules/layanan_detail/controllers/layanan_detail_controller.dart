@@ -26,10 +26,7 @@ class LayananDetailController extends GetxController {
     try {
       final args = Get.arguments;
 
-      print('Arguments received: $args');
-
       if (args == null) {
-        print('Error: No arguments provided');
         isLoading.value = false;
         Get.snackbar(
           'Error',
@@ -44,13 +41,11 @@ class LayananDetailController extends GetxController {
         if (args.containsKey('layanan') && args['layanan'] != null) {
           layanan.value = args['layanan'];
           isLoading.value = false;
-          print('Layanan loaded from arguments: ${layanan['name']}');
         }
         // Jika hanya ID yang dikirim, fetch dari API
         else if (args.containsKey('id') && args['id'] != null) {
           fetchLayananDetail(args['id']);
         } else {
-          print('Error: Invalid arguments structure');
           isLoading.value = false;
           Get.snackbar(
             'Error',
@@ -59,11 +54,9 @@ class LayananDetailController extends GetxController {
           );
         }
       } else {
-        print('Error: Arguments is not a Map');
         isLoading.value = false;
       }
     } catch (e) {
-      print('Error in loadLayananData: $e');
       isLoading.value = false;
       Get.snackbar(
         'Error',

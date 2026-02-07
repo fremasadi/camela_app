@@ -73,9 +73,18 @@ class LoginView extends GetView<LoginController> {
             Center(
               child: GestureDetector(
                 onTap: () => controller.goToRegister(),
-                child: Text(
-                  'Belum punya akun? Daftar di sini',
-                  style: AppFont.medium(14.sp, color: AppColor.primary),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Belum punya akun? ',
+                      style: AppFont.medium(14.sp, color: AppColor.primary),
+                    ),
+                    Text(
+                      'Daftar di sini',
+                      style: AppFont.bold(14.sp, color: AppColor.primary),
+                    ),
+                  ],
                 ),
               ),
             ),

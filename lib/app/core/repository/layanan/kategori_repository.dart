@@ -29,12 +29,10 @@ class KategoriRepository {
       if (response.statusCode == 200 && data['data'] != null) {
         // Kembalikan list kategori
         return List<Map<String, dynamic>>.from(data['data']);
-        print(data);
       } else {
         throw Exception(data['message'] ?? 'Gagal mengambil kategori');
       }
     } catch (e) {
-      print('Terjadi kesalahan saat ambil kategori: $e');
       return [];
     }
   }

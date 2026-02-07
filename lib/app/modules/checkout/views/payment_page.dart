@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../core/utils/date_converter.dart';
 import '../../../core/utils/date_coverter.dart';
 import '../../../core/utils/firebase_service.dart';
 import '../../../core/utils/price_converter.dart';
@@ -13,10 +14,7 @@ import '../../base/views/base_view.dart';
 import '../../widgets/input_form_button.dart';
 
 class PaymentPage extends StatefulWidget {
-  const PaymentPage({
-    super.key,
-    required this.response,
-  });
+  const PaymentPage({super.key, required this.response});
 
   final Map<String, dynamic> response;
 
@@ -48,7 +46,6 @@ class _PaymentPageState extends State<PaymentPage> {
       final data = widget.response['data'];
       final booking = data?['booking'];
       final payment = data?['payment'];
-
 
       if (booking == null || payment == null) {
         throw Exception('Data booking atau payment tidak ditemukan');
@@ -122,23 +119,17 @@ class _PaymentPageState extends State<PaymentPage> {
     });
   }
 
-  String _formatTime(int seconds) {
-    int minutes = seconds ~/ 60;
-    int remaining = seconds % 60;
-    return '$minutes:${remaining.toString().padLeft(2, '0')}';
-  }
-
   // =========================================================
   // FIREBASE LISTENER
   // =========================================================
   void _setupFirebaseListener() {
-    final orderId = bookingData['order_id']?.toString() ??
+    final orderId =
+        bookingData['order_id']?.toString() ??
         paymentData['order_id']?.toString();
 
     if (orderId == null || orderId.isEmpty) return;
 
     _firebaseService.listenToBooking(orderId, (updatedBooking) {
-
       if (updatedBooking == null || !mounted) return;
 
       setState(() => bookingData = updatedBooking);
@@ -204,7 +195,7 @@ class _PaymentPageState extends State<PaymentPage> {
                   color: AppColor.white,
                 ),
               ),
-            )
+            ),
           ],
         ),
       ),
@@ -243,20 +234,21 @@ class _PaymentPageState extends State<PaymentPage> {
     final paymentStatus = _getPaymentStatus();
 
     // VA Number
-    final vaNumber = paymentData['va_number']?.toString() ??
+    final vaNumber =
+        paymentData['va_number']?.toString() ??
         parsedResponse['va_numbers']?[0]?['va_number']?.toString() ??
         '-';
 
     // Bank
-    final bankName = (paymentData['bank']?.toString() ??
-        parsedResponse['va_numbers']?[0]?['bank']?.toString() ??
-        'BCA')
-        .toUpperCase();
+    final bankName =
+        (paymentData['bank']?.toString() ??
+                parsedResponse['va_numbers']?[0]?['bank']?.toString() ??
+                'BCA')
+            .toUpperCase();
 
     // Amount
-    final grossAmount = paymentData['gross_amount'] ??
-        bookingData['total_pembayaran'] ??
-        0;
+    final grossAmount =
+        paymentData['gross_amount'] ?? bookingData['total_pembayaran'] ?? 0;
 
     // Expired date
     String expiredDateStr = '-';
@@ -272,7 +264,7 @@ class _PaymentPageState extends State<PaymentPage> {
 
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (_, __) {
+      onPopInvokedWithResult: (_, _) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => BaseView()),
@@ -288,11 +280,7 @@ class _PaymentPageState extends State<PaymentPage> {
                 MaterialPageRoute(builder: (_) => BaseView()),
               );
             },
-            icon: Icon(
-              Icons.arrow_back,
-              size: 28.sp,
-              color: AppColor.primary,
-            ),
+            icon: Icon(Icons.arrow_back, size: 28.sp, color: AppColor.primary),
           ),
           title: Text(
             'Pembayaran',
@@ -355,11 +343,11 @@ class _PaymentPageState extends State<PaymentPage> {
                         horizontal: 16.sp,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColor.primary.withOpacity(0.2),
+                        color: AppColor.primary.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(80.r),
                       ),
                       child: Text(
-                        _formatTime(_remainingSeconds),
+                        formatTime(_remainingSeconds),
                         style: TextStyle(
                           fontSize: 10.sp,
                           fontFamily: 'SemiBold',
@@ -388,10 +376,7 @@ class _PaymentPageState extends State<PaymentPage> {
                   Expanded(
                     child: Text(
                       vaNumber,
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        fontFamily: 'SemiBold',
-                      ),
+                      style: TextStyle(fontSize: 14.sp, fontFamily: 'SemiBold'),
                     ),
                   ),
                   GestureDetector(
@@ -402,7 +387,7 @@ class _PaymentPageState extends State<PaymentPage> {
                       height: 25.h,
                       color: AppColor.primary,
                     ),
-                  )
+                  ),
                 ],
               ),
 
@@ -421,10 +406,7 @@ class _PaymentPageState extends State<PaymentPage> {
 
               Text(
                 formatCurrency(grossAmount.toString()),
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  fontFamily: 'SemiBold',
-                ),
+                style: TextStyle(fontSize: 14.sp, fontFamily: 'SemiBold'),
               ),
 
               const Divider(height: 32),
@@ -432,21 +414,21 @@ class _PaymentPageState extends State<PaymentPage> {
               // Instructions
               Text(
                 'Cara Bayar',
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  fontFamily: 'SemiBold',
-                ),
+                style: TextStyle(fontSize: 12.sp, fontFamily: 'SemiBold'),
               ),
               SizedBox(height: 16.h),
 
               _buildInstructionItem('1. Pilih m-Transfer > Virtual Account'),
               _buildInstructionItem(
-                  '2. Masukkan nomor Virtual Account $bankName'),
+                '2. Masukkan nomor Virtual Account $bankName',
+              ),
               _buildInstructionItem(
-                  '3. Periksa informasi dan pastikan total tagihan benar'),
+                '3. Periksa informasi dan pastikan total tagihan benar',
+              ),
               _buildInstructionItem('4. Masukkan PIN Anda'),
               _buildInstructionItem(
-                  '5. Simpan bukti pembayaran jika diperlukan'),
+                '5. Simpan bukti pembayaran jika diperlukan',
+              ),
 
               SizedBox(height: 24.h),
 

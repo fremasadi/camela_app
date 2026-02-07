@@ -13,6 +13,7 @@ abstract class Routes {
   static const LAYANAN_DETAIL = _Paths.LAYANAN_DETAIL;
   static const CART = _Paths.CART;
   static const CHECKOUT = _Paths.CHECKOUT;
+  static const CHAT = _Paths.CHAT;
 }
 
 abstract class _Paths {
@@ -27,4 +28,5 @@ abstract class _Paths {
   static const LAYANAN_DETAIL = '/layanan-detail';
   static const CART = '/cart';
   static const CHECKOUT = '/checkout';
+  static const CHAT = '/chat';
 }

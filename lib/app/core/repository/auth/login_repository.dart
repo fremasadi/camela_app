@@ -35,7 +35,6 @@ class LoginRepository {
         return {'success': false, 'message': data['message'] ?? 'Login gagal'};
       }
     } catch (e) {
-      print('Terjadi kesalahan koneksi: $e');
       return {'success': false, 'message': 'Terjadi kesalahan koneksi: $e'};
     }
   }
@@ -72,16 +71,12 @@ class LoginRepository {
         );
 
         if (response.statusCode == 200) {
-          print('Logout berhasil dari server.');
-        } else {
-          print('Logout gagal dari server: ${response.body}');
-        }
+        } else {}
       }
 
       // Tetap hapus data lokal, baik berhasil logout server atau tidak
       await prefs.clear();
     } catch (e) {
-      print('Kesalahan saat logout: $e');
       final prefs = await SharedPreferences.getInstance();
       await prefs.clear();
     }

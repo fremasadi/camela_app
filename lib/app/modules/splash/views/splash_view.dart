@@ -73,8 +73,6 @@ class SplashView extends GetView<SplashController> {
                         child: InputFormButton(
                           onClick: () => Get.toNamed(Routes.REGISTER),
                           titleText: 'Register',
-                          color: Colors.white,
-                          titleColor: AppColor.primary,
                         ),
                       ),
                       SizedBox(width: 15.w),

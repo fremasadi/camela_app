@@ -27,7 +27,7 @@ class InputFormButton extends StatelessWidget {
       onPressed: onClick, // bisa null = otomatis disabled
       style: ElevatedButton.styleFrom(
         padding: padding,
-        backgroundColor: color ?? AppColor.primary,
+        backgroundColor: AppColor.primary,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(cornerRadius ?? 12.0),
         ),

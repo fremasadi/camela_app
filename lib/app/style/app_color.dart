@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/cupertino.dart';
 
 class AppColor {
@@ -10,5 +12,5 @@ class AppColor {
   static Color grey = const Color(0xff797C7B);
   static Color green = const Color(0xff03AD00);
   static Color greyPrice = const Color(0xff7F7F7F);
-
+  static Color greyBackground = const Color(0xffF8F8F8);
 }

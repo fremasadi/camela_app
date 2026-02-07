@@ -1,4 +1,5 @@
 import 'package:camela_app/app/core/utils/url.dart';
+import 'package:camela_app/app/routes/app_pages.dart';
 import 'package:camela_app/app/style/app_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -16,7 +17,16 @@ class HomeView extends GetView<HomeController> {
   Widget build(BuildContext context) {
     final cartController = Get.put(CartController());
 
+    final user = controller.userData.value;
+
     return Scaffold(
+      // floatingActionButton: FloatingActionButton(
+      //   backgroundColor: AppColor.primary,
+      //   onPressed: () {
+      //     Get.toNamed(Routes.CHAT);
+      //   },
+      //   child: Icon(Icons.chat, color: AppColor.white),
+      // ),
       body: RefreshIndicator(
         onRefresh: controller.refreshData,
         child: SingleChildScrollView(
@@ -42,7 +52,7 @@ class HomeView extends GetView<HomeController> {
                           style: AppFont.medium(24.sp, color: AppColor.black),
                           children: [
                             TextSpan(
-                              text: 'Zahwa',
+                              text: '${user?['name']}' ?? 'user',
                               style: AppFont.bold(
                                 24.sp,
                                 color: AppColor.primary,
@@ -51,6 +61,7 @@ class HomeView extends GetView<HomeController> {
                           ],
                         ),
                       ),
+                      Spacer(),
                       Obx(() {
                         return Stack(
                           children: [
@@ -131,7 +142,6 @@ class HomeView extends GetView<HomeController> {
                                 controller.selectedKategoriId.value == null;
                             return GestureDetector(
                               onTap: () {
-                                print('Tap Semua');
                                 controller.selectKategori(null);
                               },
                               child: Container(
@@ -177,9 +187,6 @@ class HomeView extends GetView<HomeController> {
                               controller.selectedKategoriId.value == kategoriId;
                           return GestureDetector(
                             onTap: () {
-                              print(
-                                'Tap kategori: ${kategori['name']} (ID: $kategoriId)',
-                              );
                               controller.selectKategori(kategoriId);
                             },
                             child: Container(
@@ -294,7 +301,7 @@ class HomeView extends GetView<HomeController> {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -309,7 +316,8 @@ class HomeView extends GetView<HomeController> {
                 top: Radius.circular(12),
               ),
               child: Image.network(
-                '${AppUrl.imageUrl}/${layanan['image'][0]}', // ambil index pertama
+                '${AppUrl.imageUrl}/${layanan['image'][0]}',
+                // ambil index pertama
                 height: 160.h,
                 width: double.infinity,
                 fit: BoxFit.cover,
@@ -337,7 +345,7 @@ class HomeView extends GetView<HomeController> {
                           vertical: 4.sp,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColor.primary.withOpacity(0.1),
+                          color: AppColor.primary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(

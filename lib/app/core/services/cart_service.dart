@@ -18,7 +18,6 @@ class CartService {
       // pastikan tiap elemen berupa Map<String, dynamic>
       return decoded.map((item) => Map<String, dynamic>.from(item)).toList();
     } catch (e) {
-      print('⚠️ Error getting cart items: $e');
       // jika error parsing, hapus data rusak
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(_cartKey);
@@ -30,7 +29,6 @@ class CartService {
   static Future<bool> addToCart(Map<String, dynamic> layanan) async {
     try {
       if (layanan['id'] == null) {
-        print('❌ Layanan tidak memiliki ID.');
         return false;
       }
 
@@ -66,7 +64,6 @@ class CartService {
       await prefs.setString(_cartKey, jsonEncode(cartItems));
       return true;
     } catch (e) {
-      print('❌ Error adding to cart: $e');
       return false;
     }
   }
@@ -89,7 +86,6 @@ class CartService {
       await prefs.setString(_cartKey, jsonEncode(cartItems));
       return true;
     } catch (e) {
-      print('❌ Error updating quantity: $e');
       return false;
     }
   }
@@ -104,7 +100,6 @@ class CartService {
       await prefs.setString(_cartKey, jsonEncode(cartItems));
       return true;
     } catch (e) {
-      print('❌ Error removing from cart: $e');
       return false;
     }
   }
@@ -116,7 +111,6 @@ class CartService {
       await prefs.remove(_cartKey);
       return true;
     } catch (e) {
-      print('❌ Error clearing cart: $e');
       return false;
     }
   }

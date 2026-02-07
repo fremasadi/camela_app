@@ -48,7 +48,6 @@ class RegisterRepository {
         };
       }
     } catch (e) {
-      print('Terjadi kesalahan koneksi: $e');
       return {'success': false, 'message': 'Terjadi kesalahan koneksi: $e'};
     }
   }

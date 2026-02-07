@@ -95,14 +95,22 @@ class RegisterView extends GetView<RegisterController> {
                 ),
               ),
             ),
-
             SizedBox(height: 20.h),
             Center(
               child: GestureDetector(
                 onTap: () => Get.back(),
-                child: Text(
-                  'Sudah punya akun? Login',
-                  style: AppFont.medium(14.sp, color: AppColor.primary),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Sudah punya akun? ',
+                      style: AppFont.medium(14.sp, color: AppColor.primary),
+                    ),
+                    Text(
+                      'Login',
+                      style: AppFont.bold(14.sp, color: AppColor.primary),
+                    ),
+                  ],
                 ),
               ),
             ),

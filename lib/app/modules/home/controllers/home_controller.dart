@@ -2,6 +2,8 @@ import 'package:get/get.dart';
 import 'package:camela_app/app/core/repository/layanan/kategori_repository.dart';
 import 'package:camela_app/app/core/repository/layanan/layanan_repository.dart';
 
+import '../../../core/repository/auth/login_repository.dart';
+
 class HomeController extends GetxController {
   // Kategori
   var kategoriList = <Map<String, dynamic>>[].obs;
@@ -14,16 +16,23 @@ class HomeController extends GetxController {
   // Loading states
   var isLoadingKategori = true.obs;
   var isLoadingLayanan = true.obs;
+  var userData = Rxn<Map<String, dynamic>>();
+
+  Future<void> loadUserData() async {
+    final user = await LoginRepository.getUser();
+    userData.value = user;
+  }
 
   @override
   void onInit() {
     super.onInit();
     // Set default ke "Semua" (null)
+    loadUserData();
+
     selectedKategoriId.value = null;
     fetchKategori();
     fetchLayanan();
   }
-
 
   /// Mengambil data kategori
   Future<void> fetchKategori() async {
@@ -74,13 +83,10 @@ class HomeController extends GetxController {
     }
 
     // Debug log
-    print('Selected Kategori ID: ${selectedKategoriId.value}');
-    print('Filtered Layanan Count: ${filteredLayananList.length}');
   }
 
   /// Pilih kategori (dipanggil saat user tap kategori)
   void selectKategori(int? kategoriId) {
-    print('Selecting kategori: $kategoriId');
     selectedKategoriId.value = kategoriId;
     filterLayanan();
   }

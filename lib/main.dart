@@ -8,23 +8,22 @@ import 'app/routes/app_pages.dart';
 import 'app/style/app_color.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
     FirebaseOptions firebaseOptions = Platform.isIOS
         ? const FirebaseOptions(
-      apiKey: 'AIzaSyDs1BXE6XgW7RaCwLx9jrSnfuAmnlQSZ3I',
-      appId: '1:1043350175679:ios:eda4a92cb5b984c34fab0a',
-      messagingSenderId: '1043350175679',
-      projectId: 'fre-kantin',
-    )
+            apiKey: 'AIzaSyDs1BXE6XgW7RaCwLx9jrSnfuAmnlQSZ3I',
+            appId: '1:1043350175679:ios:eda4a92cb5b984c34fab0a',
+            messagingSenderId: '1043350175679',
+            projectId: 'fre-kantin',
+          )
         : const FirebaseOptions(
-      apiKey: 'AIzaSyCNjnbWpe0UZ6ykxAz0mTVjctZwO2T-WjA',
-      appId: '1:1043350175679:android:595d191fc9ca134b4fab0a',
-      messagingSenderId: '1043350175679',
-      projectId: 'fre-kantin',
-    );
+            apiKey: 'AIzaSyCNjnbWpe0UZ6ykxAz0mTVjctZwO2T-WjA',
+            appId: '1:1043350175679:android:595d191fc9ca134b4fab0a',
+            messagingSenderId: '1043350175679',
+            projectId: 'fre-kantin',
+          );
     await Firebase.initializeApp(options: firebaseOptions);
   } catch (e) {
     throw ('error init firebase main');

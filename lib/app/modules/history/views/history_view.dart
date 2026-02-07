@@ -16,81 +16,91 @@ class HistoryView extends GetView<HistoryController> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        title: Text(
-          'Riwayat Booking',
-          style: AppFont.bold(18.sp, color: Colors.white),
-        ),
-        centerTitle: true,
-        backgroundColor: AppColor.primary,
-        elevation: 0,
-      ),
-      body: Column(
-        children: [
-          // Filter Tabs
-          _buildFilterTabs(),
 
-          // Booking List
-          Expanded(
-            child: Obx(() {
-              if (controller.isLoading.value) {
-                return const Center(child: CircularProgressIndicator());
-              }
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.h, vertical: 14.sp),
+              child: Text(
+                'Riwayat Booking',
+                style: AppFont.bold(18.sp, color: AppColor.primary),
+              ),
+            ),
+            // Filter Tabs
+            _buildFilterTabs(),
 
-              if (controller.errorMessage.isNotEmpty) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.error_outline, size: 64.sp, color: Colors.red),
-                      SizedBox(height: 16.h),
-                      Text(
-                        'Gagal memuat data',
-                        style: AppFont.medium(16.sp, color: Colors.grey[700]),
-                      ),
-                      SizedBox(height: 8.h),
-                      ElevatedButton(
-                        onPressed: controller.fetchBookingHistory,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColor.primary,
+            // Booking List
+            Expanded(
+              child: Obx(() {
+                if (controller.isLoading.value) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (controller.errorMessage.isNotEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          size: 64.sp,
+                          color: Colors.red,
                         ),
-                        child: Text('Coba Lagi'),
-                      ),
-                    ],
+                        SizedBox(height: 16.h),
+                        Text(
+                          'Gagal memuat data',
+                          style: AppFont.medium(16.sp, color: Colors.grey[700]),
+                        ),
+                        SizedBox(height: 8.h),
+                        ElevatedButton(
+                          onPressed: controller.fetchBookingHistory,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColor.primary,
+                          ),
+                          child: Text('Coba Lagi'),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                if (controller.filteredBookings.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.inbox_outlined,
+                          size: 64.sp,
+                          color: Colors.grey,
+                        ),
+                        SizedBox(height: 16.h),
+                        Text(
+                          'Belum ada riwayat booking',
+                          style: AppFont.medium(16.sp, color: Colors.grey[600]),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                return RefreshIndicator(
+                  onRefresh: controller.refreshHistory,
+                  child: ListView.builder(
+                    padding: EdgeInsets.all(16.sp),
+                    itemCount: controller.filteredBookings.length,
+                    itemBuilder: (context, index) {
+                      final booking = controller.filteredBookings[index];
+                      return _buildBookingCard(booking);
+                    },
                   ),
                 );
-              }
-
-              if (controller.filteredBookings.isEmpty) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.inbox_outlined, size: 64.sp, color: Colors.grey),
-                      SizedBox(height: 16.h),
-                      Text(
-                        'Belum ada riwayat booking',
-                        style: AppFont.medium(16.sp, color: Colors.grey[600]),
-                      ),
-                    ],
-                  ),
-                );
-              }
-
-              return RefreshIndicator(
-                onRefresh: controller.refreshHistory,
-                child: ListView.builder(
-                  padding: EdgeInsets.all(16.sp),
-                  itemCount: controller.filteredBookings.length,
-                  itemBuilder: (context, index) {
-                    final booking = controller.filteredBookings[index];
-                    return _buildBookingCard(booking);
-                  },
-                ),
-              );
-            }),
-          ),
-        ],
+              }),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -107,11 +117,23 @@ class HistoryView extends GetView<HistoryController> {
             children: [
               _buildTabItem('all', 'Semua', controller.countByStatus('all')),
               SizedBox(width: 12.w),
-              _buildTabItem('pending', 'Menunggu', controller.countByStatus('pending')),
+              _buildTabItem(
+                'pending',
+                'Menunggu',
+                controller.countByStatus('pending'),
+              ),
               SizedBox(width: 12.w),
-              _buildTabItem('confirmed', 'Dikonfirmasi', controller.countByStatus('confirmed')),
+              _buildTabItem(
+                'confirmed',
+                'Dikonfirmasi',
+                controller.countByStatus('confirmed'),
+              ),
               SizedBox(width: 12.w),
-              _buildTabItem('cancelled', 'Dibatalkan', controller.countByStatus('cancelled')),
+              _buildTabItem(
+                'cancelled',
+                'Dibatalkan',
+                controller.countByStatus('cancelled'),
+              ),
             ],
           ),
         );
@@ -167,13 +189,14 @@ class HistoryView extends GetView<HistoryController> {
 
   Widget _buildBookingCard(Map<String, dynamic> booking) {
     final details = booking['details'] as List?;
-    final pembayaran = booking['pembayaran'] as Map<String, dynamic>?;
-    final status = booking['status'] as String? ?? 'pending';
+    final payment = booking['payment'] as Map<String, dynamic>?;
+    final bookingData = booking['booking'] as Map<String, dynamic>? ?? {};
+    final status = bookingData['status']?.toString().toLowerCase() ?? 'pending';
 
     final tanggalBooking = booking['tanggal_booking'] != null
         ? DateTime.parse(booking['tanggal_booking'])
         : DateTime.now();
-    final jamBooking = booking['jam_booking'] as String? ?? '';
+    final jamBooking = bookingData['jam_booking']?.toString() ?? '';
 
     return Container(
       margin: EdgeInsets.only(bottom: 16.h),
@@ -182,7 +205,7 @@ class HistoryView extends GetView<HistoryController> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -195,8 +218,10 @@ class HistoryView extends GetView<HistoryController> {
           Container(
             padding: EdgeInsets.all(12.sp),
             decoration: BoxDecoration(
-              color: controller.getStatusColor(status).withOpacity(0.1),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              color: controller.getStatusColor(status).withValues(alpha: 0.1),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(12),
+              ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -219,7 +244,10 @@ class HistoryView extends GetView<HistoryController> {
                   ],
                 ),
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12.sp, vertical: 4.sp),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 12.sp,
+                    vertical: 4.sp,
+                  ),
                   decoration: BoxDecoration(
                     color: controller.getStatusColor(status),
                     borderRadius: BorderRadius.circular(12),
@@ -241,10 +269,17 @@ class HistoryView extends GetView<HistoryController> {
                 // Date & Time
                 Row(
                   children: [
-                    Icon(Icons.calendar_today, size: 16.sp, color: Colors.grey[600]),
+                    Icon(
+                      Icons.calendar_today,
+                      size: 16.sp,
+                      color: Colors.grey[600],
+                    ),
                     SizedBox(width: 8.w),
                     Text(
-                      DateFormat('EEEE, dd MMMM yyyy', 'id_ID').format(tanggalBooking),
+                      DateFormat(
+                        'EEEE, dd MMMM yyyy',
+                        'id_ID',
+                      ).format(tanggalBooking),
                       style: AppFont.medium(13.sp, color: Colors.grey[700]),
                     ),
                   ],
@@ -252,7 +287,11 @@ class HistoryView extends GetView<HistoryController> {
                 SizedBox(height: 6.h),
                 Row(
                   children: [
-                    Icon(Icons.access_time, size: 16.sp, color: Colors.grey[600]),
+                    Icon(
+                      Icons.access_time,
+                      size: 16.sp,
+                      color: Colors.grey[600],
+                    ),
                     SizedBox(width: 8.w),
                     Text(
                       jamBooking,
@@ -269,6 +308,7 @@ class HistoryView extends GetView<HistoryController> {
                 if (details != null && details.isNotEmpty)
                   ...details.map((detail) {
                     final layanan = detail['layanan'] as Map<String, dynamic>?;
+                    debugPrint('data layanan $layanan');
                     final qty = detail['qty'] ?? 1;
                     final harga = detail['harga'] ?? '0';
 
@@ -303,19 +343,28 @@ class HistoryView extends GetView<HistoryController> {
                               children: [
                                 Text(
                                   layanan?['name'] ?? 'Layanan',
-                                  style: AppFont.bold(14.sp, color: AppColor.black),
+                                  style: AppFont.bold(
+                                    14.sp,
+                                    color: AppColor.black,
+                                  ),
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 SizedBox(height: 4.h),
                                 Text(
                                   'Qty: $qty',
-                                  style: AppFont.regular(12.sp, color: Colors.grey[600]),
+                                  style: AppFont.regular(
+                                    12.sp,
+                                    color: Colors.grey[600],
+                                  ),
                                 ),
                                 SizedBox(height: 4.h),
                                 Text(
                                   'Rp.${PriceFormatter.price(double.parse(harga.toString()))}',
-                                  style: AppFont.bold(13.sp, color: AppColor.primary),
+                                  style: AppFont.bold(
+                                    13.sp,
+                                    color: AppColor.primary,
+                                  ),
                                 ),
                               ],
                             ),
@@ -323,7 +372,7 @@ class HistoryView extends GetView<HistoryController> {
                         ],
                       ),
                     );
-                  }).toList(),
+                  }),
 
                 const Divider(),
                 SizedBox(height: 8.h),
@@ -343,7 +392,7 @@ class HistoryView extends GetView<HistoryController> {
                   ],
                 ),
 
-                if (pembayaran != null) ...[
+                if (payment != null) ...[
                   SizedBox(height: 8.h),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -353,7 +402,7 @@ class HistoryView extends GetView<HistoryController> {
                         style: AppFont.regular(12.sp, color: Colors.grey[600]),
                       ),
                       Text(
-                        pembayaran['payment_type'] ?? 'N/A',
+                        payment['payment_type'] ?? 'N/A',
                         style: AppFont.medium(12.sp, color: Colors.grey[800]),
                       ),
                     ],
@@ -367,10 +416,10 @@ class HistoryView extends GetView<HistoryController> {
                         style: AppFont.regular(12.sp, color: Colors.grey[600]),
                       ),
                       Text(
-                        pembayaran['status_label'] ?? 'N/A',
+                        payment['status_label'] ?? 'N/A',
                         style: AppFont.medium(
                           12.sp,
-                          color: pembayaran['is_paid'] == true
+                          color: payment['is_paid'] == true
                               ? Colors.green
                               : Colors.orange,
                         ),
@@ -382,7 +431,9 @@ class HistoryView extends GetView<HistoryController> {
                 SizedBox(height: 12.h),
 
                 // Action Button
-                if (status == 'pending' && pembayaran != null && pembayaran['is_paid'] != true)
+                if (status == 'pending' &&
+                    payment != null &&
+                    payment['is_paid'] != true)
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(

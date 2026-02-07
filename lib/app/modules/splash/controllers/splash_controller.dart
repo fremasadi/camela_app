@@ -18,7 +18,6 @@ class SplashController extends GetxController {
     final token = await LoginRepository.getToken();
 
     if (token != null) {
-      print(token);
       Get.offAllNamed(Routes.BASE);
     } else {
       // ubah state → tampilkan UI welcome
