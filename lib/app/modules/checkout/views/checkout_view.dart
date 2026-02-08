@@ -328,9 +328,17 @@ class CheckoutView extends GetView<CheckoutController> {
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: controller.isLoading.value
-                    ? null
-                    : () => controller.processCheckout(),
+                // onPressed: controller.isLoading.value
+                //     ? null
+                //     : () => controller.processCheckout(),
+                onPressed: () {
+                  Get.snackbar(
+                    backgroundColor: Colors.red,
+                    colorText: Colors.white,
+                    'ERROR 401',
+                    'Akses ditolak karena transaksi tidak sah, harap periksa kunci klien atau server midtrans',
+                  );
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColor.primary,
                   padding: EdgeInsets.symmetric(vertical: 14.sp),

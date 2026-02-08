@@ -52,7 +52,7 @@ class HomeView extends GetView<HomeController> {
                           style: AppFont.medium(24.sp, color: AppColor.black),
                           children: [
                             TextSpan(
-                              text: '${user?['name']}' ?? 'user',
+                              text: 'Girl',
                               style: AppFont.bold(
                                 24.sp,
                                 color: AppColor.primary,
