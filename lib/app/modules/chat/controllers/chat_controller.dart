@@ -32,7 +32,7 @@ Berikut informasi penting yang harus kamu ketahui:
 
 INFORMASI SALON:
 - Nama: Salon Camela
-- Lokasi: Jl. Raya Darmo No. 123, Surabaya, Jawa Timur 60264
+- Lokasi: Jl. Brawijaya no. 4, Kediri, Indonesia, East Java
 - Telepon: (031) 1234-5678
 - WhatsApp: 0812-3456-7890
 
@@ -107,7 +107,7 @@ INSTRUKSI PENTING:
         'Booking 1-2 hari sebelumnya lebih baik!',
 
     'lokasi':
-        '📍 Jl. Raya Darmo No. 123, Surabaya\n'
+        '📍Jl. Brawijaya no. 4, Kediri, Indonesia, East Java\n'
         '📞 (031) 1234-5678\n'
         '📱 WA: 0812-3456-7890',
   };

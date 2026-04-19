@@ -44,10 +44,8 @@ class MyApp extends StatelessWidget {
       builder: (context, child) {
         return GetMaterialApp(
           builder: (context, child) {
-            final MediaQueryData data = MediaQuery.of(context);
-            return MediaQuery(
-              data: data.copyWith(textScaler: const TextScaler.linear(1.10)),
-              child: child!,
+            return Overlay(
+              initialEntries: [OverlayEntry(builder: (context) => child!)],
             );
           },
           theme: ThemeData(

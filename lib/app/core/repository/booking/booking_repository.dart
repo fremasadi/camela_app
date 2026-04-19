@@ -29,8 +29,6 @@ class BookingRepository {
       );
 
       final Map<String, dynamic> data = json.decode(response.body);
-      print('token $token');
-      print('data ${json.encode(payload)}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return BookingModel.fromJson(data);
@@ -135,6 +133,49 @@ class BookingRepository {
         return data['data'];
       } else {
         throw Exception(data['message'] ?? 'Gagal cek status pembayaran');
+      }
+    } catch (e) {
+      throw Exception('Error: $e');
+    }
+  }
+
+  /// Get available booking slots
+  Future<Map<String, dynamic>> getSlotTersedia({
+    required String tanggal,
+    required List<int> layananIds,
+  }) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null) {
+        throw Exception(
+          'Token tidak ditemukan. Silakan login terlebih dahulu.',
+        );
+      }
+
+      final queryParams = [
+        'tanggal=$tanggal',
+        ...layananIds.map((id) => 'layanan_ids[]=$id'),
+      ].join('&');
+
+      final url = '${AppUrl.baseUrl}/bookings/slot-tersedia?$queryParams';
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      final Map<String, dynamic> data = json.decode(response.body);
+
+      if (response.statusCode == 200) {
+        return data['data'];
+      } else {
+        throw Exception(data['message'] ?? 'Gagal memuat slot tersedia');
       }
     } catch (e) {
       throw Exception('Error: $e');

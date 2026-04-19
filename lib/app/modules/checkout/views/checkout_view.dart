@@ -70,12 +70,22 @@ class CheckoutView extends GetView<CheckoutController> {
                     Divider(height: 24.h),
 
                     // Time Selection
-                    _buildInfoRow(
-                      icon: Icons.access_time,
-                      label: 'Jam Booking',
-                      value: controller.selectedTime.value.format(context),
-                      onTap: () => controller.selectTime(context),
-                    ),
+                    Obx(() {
+                      final slot = controller.selectedSlot.value;
+                      final slotText = slot != null
+                          ? '${slot['jam_mulai']} - ${slot['jam_selesai']}'
+                          : 'Pilih Jam';
+                      return _buildInfoRow(
+                        icon: Icons.access_time,
+                        label: 'Jam Booking',
+                        value: controller.isLoadingSlots.value
+                            ? 'Memuat slot...'
+                            : slotText,
+                        onTap: controller.isLoadingSlots.value
+                            ? null
+                            : () => _showSlotPicker(context),
+                      );
+                    }),
                   ],
                 ),
               ),
@@ -105,12 +115,12 @@ class CheckoutView extends GetView<CheckoutController> {
                     SizedBox(height: 12.h),
 
                     // DP Option
-                    _buildPaymentOption(
-                      title: 'DP 50%',
-                      subtitle: 'Bayar setengah sekarang',
-                      value: 'dp',
-                    ),
-                    SizedBox(height: 8.h),
+                    // _buildPaymentOption(
+                    //   title: 'DP 50%',
+                    //   subtitle: 'Bayar setengah sekarang',
+                    //   value: 'dp',
+                    // ),
+                    // SizedBox(height: 8.h),
 
                     // Lunas Option
                     _buildPaymentOption(
@@ -355,6 +365,140 @@ class CheckoutView extends GetView<CheckoutController> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  void _showSlotPicker(BuildContext context) {
+    // Ambil snapshot sebelum sheet dibuka — hindari Obx di dalam bottomSheet
+    final slots = List<Map<String, dynamic>>.from(controller.availableSlots);
+    final currentSelected = controller.selectedSlot.value;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setState) {
+          Map<String, dynamic>? localSelected = currentSelected;
+
+          return DraggableScrollableSheet(
+            expand: false,
+            initialChildSize: 0.5,
+            minChildSize: 0.3,
+            maxChildSize: 0.85,
+            builder: (_, scrollController) => Column(
+              children: [
+                Container(
+                  margin: EdgeInsets.symmetric(vertical: 8.h),
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Pilih Jam Booking',
+                      style: AppFont.bold(16.sp, color: AppColor.black),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 12.h),
+                if (slots.isEmpty)
+                  Padding(
+                    padding: EdgeInsets.symmetric(vertical: 24.h),
+                    child: Center(
+                      child: Text(
+                        'Tidak ada slot tersedia untuk tanggal ini',
+                        style: AppFont.regular(14.sp, color: Colors.grey[600]),
+                      ),
+                    ),
+                  )
+                else
+                  Expanded(
+                    child: ListView.separated(
+                      controller: scrollController,
+                      padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
+                      itemCount: slots.length,
+                      separatorBuilder: (_, _) => SizedBox(height: 8.h),
+                      itemBuilder: (_, index) {
+                        final slot = slots[index];
+                        final tersedia = slot['tersedia'] as bool? ?? false;
+                        final isSelected = localSelected == slot;
+                        return InkWell(
+                          onTap: tersedia
+                              ? () {
+                                  controller.selectSlot(slot);
+                                  Navigator.of(ctx).pop();
+                                }
+                              : null,
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 16.w,
+                              vertical: 12.h,
+                            ),
+                            decoration: BoxDecoration(
+                              color: !tersedia
+                                  ? Colors.grey[100]
+                                  : isSelected
+                                  ? AppColor.primary.withValues(alpha: 0.1)
+                                  : Colors.white,
+                              border: Border.all(
+                                color: !tersedia
+                                    ? Colors.grey[300]!
+                                    : isSelected
+                                    ? AppColor.primary
+                                    : Colors.grey[300]!,
+                                width: isSelected ? 2 : 1,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  '${slot['jam_mulai']} - ${slot['jam_selesai']}',
+                                  style: AppFont.medium(
+                                    14.sp,
+                                    color: !tersedia
+                                        ? Colors.grey
+                                        : AppColor.black,
+                                  ),
+                                ),
+                                if (!tersedia)
+                                  Text(
+                                    'Penuh',
+                                    style: AppFont.regular(
+                                      12.sp,
+                                      color: Colors.red,
+                                    ),
+                                  ),
+                                if (tersedia && isSelected)
+                                  Icon(
+                                    Icons.check_circle,
+                                    color: AppColor.primary,
+                                    size: 18.sp,
+                                  ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

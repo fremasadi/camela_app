@@ -20,13 +20,13 @@ class HomeView extends GetView<HomeController> {
     final user = controller.userData.value;
 
     return Scaffold(
-      // floatingActionButton: FloatingActionButton(
-      //   backgroundColor: AppColor.primary,
-      //   onPressed: () {
-      //     Get.toNamed(Routes.CHAT);
-      //   },
-      //   child: Icon(Icons.chat, color: AppColor.white),
-      // ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: AppColor.primary,
+        onPressed: () {
+          Get.toNamed(Routes.CHAT);
+        },
+        child: Icon(Icons.chat, color: AppColor.white),
+      ),
       body: RefreshIndicator(
         onRefresh: controller.refreshData,
         child: SingleChildScrollView(

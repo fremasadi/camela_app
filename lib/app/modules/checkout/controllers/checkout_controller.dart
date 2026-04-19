@@ -21,6 +21,11 @@ class CheckoutController extends GetxController {
   var selectedTime = TimeOfDay.now().obs;
   var paymentType = 'lunas'.obs; // 'dp' or 'lunas'
 
+  // Slot tersedia
+  var availableSlots = <Map<String, dynamic>>[].obs;
+  var isLoadingSlots = false.obs;
+  var selectedSlot = Rxn<Map<String, dynamic>>();
+
   // Payment method
   var selectedPaymentMethod = 'BANK_TRANSFER'.obs;
   var selectedBank = 'bri'.obs;
@@ -126,6 +131,36 @@ class CheckoutController extends GetxController {
     selectedBank.value = bank;
   }
 
+  /// Fetch available slots for selected date and cart layanan
+  Future<void> fetchSlots() async {
+    if (cartItems.isEmpty) return;
+
+    try {
+      isLoadingSlots.value = true;
+      selectedSlot.value = null;
+
+      final tanggal = DateFormat('yyyy-MM-dd').format(selectedDate.value);
+      final layananIds = cartItems
+          .map((item) => item['id'])
+          .whereType<int>()
+          .toList();
+
+      if (layananIds.isEmpty) return;
+
+      final data = await _repository.getSlotTersedia(
+        tanggal: tanggal,
+        layananIds: layananIds,
+      );
+
+      availableSlots.value = List<Map<String, dynamic>>.from(data['slots'] ?? []);
+    } catch (e) {
+      availableSlots.value = [];
+      Get.snackbar('Error', 'Gagal memuat slot: $e');
+    } finally {
+      isLoadingSlots.value = false;
+    }
+  }
+
   /// Select date
   Future<void> selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -137,25 +172,24 @@ class CheckoutController extends GetxController {
 
     if (picked != null) {
       selectedDate.value = picked;
+      await fetchSlots();
     }
   }
 
-  /// Select time
-  Future<void> selectTime(BuildContext context) async {
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: selectedTime.value,
-    );
-
-    if (picked != null) {
-      selectedTime.value = picked;
-    }
+  /// Select slot
+  void selectSlot(Map<String, dynamic> slot) {
+    selectedSlot.value = slot;
   }
 
   /// Validate form
   bool validateForm() {
     if (cartItems.isEmpty) {
       Get.snackbar('Error', 'Keranjang kosong');
+      return false;
+    }
+
+    if (selectedSlot.value == null) {
+      Get.snackbar('Error', 'Pilih jam booking terlebih dahulu');
       return false;
     }
 
@@ -208,8 +242,7 @@ class CheckoutController extends GetxController {
       final String formattedDate = DateFormat(
         'yyyy-MM-dd',
       ).format(selectedDate.value);
-      final String formattedTime =
-          '${selectedTime.value.hour.toString().padLeft(2, '0')}:${selectedTime.value.minute.toString().padLeft(2, '0')}';
+      final String formattedTime = selectedSlot.value!['jam_mulai'] as String;
 
       // Prepare payload
       final payload = {
