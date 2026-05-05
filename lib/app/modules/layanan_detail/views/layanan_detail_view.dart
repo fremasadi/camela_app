@@ -1,3 +1,4 @@
+import 'package:camela_app/app/core/utils/price_formatter.dart';
 import 'package:camela_app/app/style/app_color.dart';
 import 'package:camela_app/app/style/app_font.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +14,6 @@ class LayananDetailView extends GetView<LayananDetailController> {
   @override
   Widget build(BuildContext context) {
     final cartController = Get.put(CartController());
-    final layanan = controller.layanan;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -54,7 +54,7 @@ class LayananDetailView extends GetView<LayananDetailController> {
         final hargaAsli =
             double.tryParse(layanan['harga']?.toString() ?? '0') ?? 0.0;
         final hargaDiskon = promoAktif != null
-            ? (promoAktif['harga_diskon'] ?? 0)
+            ? double.tryParse(promoAktif['harga_diskon']?.toString() ?? '0') ?? 0.0
             : null;
         final diskonPersen = promoAktif != null
             ? (promoAktif['diskon_persen'] ?? 0)
@@ -378,7 +378,7 @@ class LayananDetailView extends GetView<LayananDetailController> {
           child: SafeArea(
             child: ElevatedButton(
               onPressed: () async {
-                await cartController.addToCart(layanan);
+                await cartController.addToCart(controller.layanan);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColor.primary,
@@ -400,7 +400,7 @@ class LayananDetailView extends GetView<LayananDetailController> {
 
   Widget _buildPriceSection(
     double hargaAsli,
-    dynamic hargaDiskon,
+    double? hargaDiskon,
     dynamic promoAktif,
   ) {
     return Container(
@@ -426,7 +426,7 @@ class LayananDetailView extends GetView<LayananDetailController> {
               SizedBox(height: 4.h),
               if (promoAktif != null) ...[
                 Text(
-                  'Rp ${hargaAsli.toStringAsFixed(0)}',
+                  'Rp.${PriceFormatter.price(hargaAsli)}',
                   style: AppFont.regular(
                     14.sp,
                     color: Colors.grey,
@@ -435,12 +435,12 @@ class LayananDetailView extends GetView<LayananDetailController> {
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  'Rp ${hargaDiskon?.toStringAsFixed(0) ?? '0'}',
+                  'Rp.${PriceFormatter.price(hargaDiskon ?? 0.0)}',
                   style: AppFont.bold(24.sp, color: AppColor.primary),
                 ),
               ] else ...[
                 Text(
-                  'Rp ${hargaAsli.toStringAsFixed(0)}',
+                  'Rp.${PriceFormatter.price(hargaAsli)}',
                   style: AppFont.bold(24.sp, color: AppColor.primary),
                 ),
               ],
@@ -454,7 +454,7 @@ class LayananDetailView extends GetView<LayananDetailController> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                'Hemat Rp ${(hargaAsli - (hargaDiskon ?? 0)).toStringAsFixed(0)}',
+                'Hemat Rp.${PriceFormatter.price(hargaAsli - (hargaDiskon ?? 0.0))}',
                 style: AppFont.bold(12.sp, color: Colors.white),
               ),
             ),

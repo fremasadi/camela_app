@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../core/model/booking.dart';
 import '../../../core/repository/booking/booking_repository.dart';
 import '../../../core/services/cart_service.dart';
+import '../../cart/controllers/cart_controller.dart';
 import '../views/gopay_payment_page.dart';
 import '../views/payment_page.dart'; // Import PaymentPage
 
@@ -40,16 +41,22 @@ class CheckoutController extends GetxController {
     loadCartData();
   }
 
+  @override
+  void onReady() {
+    super.onReady();
+    loadCartData();
+  }
+
   /// Load cart data and calculate totals
   Future<void> loadCartData() async {
     try {
       isLoading.value = true;
       final items = await CartService.getCartItems();
-      cartItems.value = items;
+      cartItems.assignAll(items);
       calculateTotal();
     } catch (e) {
       Get.snackbar('Error', 'Gagal memuat data: $e');
-      cartItems.value = [];
+      cartItems.clear();
     } finally {
       isLoading.value = false;
     }
@@ -64,14 +71,12 @@ class CheckoutController extends GetxController {
         final promoAktif = item['promo_aktif'];
         double harga = 0;
 
-        // Safely get price
         if (promoAktif != null && promoAktif['harga_diskon'] != null) {
           harga = _parseDouble(promoAktif['harga_diskon']);
         } else if (item['harga'] != null) {
           harga = _parseDouble(item['harga']);
         }
 
-        // Safely get quantity
         final qty = _parseInt(item['quantity']) ?? 1;
         total += (harga * qty);
       }
@@ -84,84 +89,60 @@ class CheckoutController extends GetxController {
     }
   }
 
-  /// Helper method to safely parse double
   double _parseDouble(dynamic value) {
     if (value == null) return 0.0;
     if (value is double) return value;
     if (value is int) return value.toDouble();
-    if (value is String) {
-      return double.tryParse(value) ?? 0.0;
-    }
+    if (value is String) return double.tryParse(value) ?? 0.0;
     return 0.0;
   }
 
-  /// Helper method to safely parse int
   int? _parseInt(dynamic value) {
     if (value == null) return null;
     if (value is int) return value;
     if (value is double) return value.toInt();
-    if (value is String) {
-      return int.tryParse(value);
-    }
+    if (value is String) return int.tryParse(value);
     return null;
   }
 
-  /// Calculate payment amount based on type
   void calculatePaymentAmount() {
     if (paymentType.value == 'dp') {
-      totalPembayaran.value = totalHarga.value * 0.5; // DP 50%
+      totalPembayaran.value = totalHarga.value * 0.5;
     } else {
-      totalPembayaran.value = totalHarga.value; // Lunas 100%
+      totalPembayaran.value = totalHarga.value;
     }
   }
 
-  /// Change payment type (dp/lunas)
   void changePaymentType(String type) {
     paymentType.value = type;
     calculatePaymentAmount();
   }
 
-  /// Set payment method
   void setPaymentMethod(String method) {
     selectedPaymentMethod.value = method;
   }
 
-  /// Set bank
   void setBank(String bank) {
     selectedBank.value = bank;
   }
 
-  /// Fetch available slots for selected date and cart layanan
   Future<void> fetchSlots() async {
     if (cartItems.isEmpty) return;
-
     try {
       isLoadingSlots.value = true;
       selectedSlot.value = null;
-
       final tanggal = DateFormat('yyyy-MM-dd').format(selectedDate.value);
-      final layananIds = cartItems
-          .map((item) => item['id'])
-          .whereType<int>()
-          .toList();
-
+      final layananIds = cartItems.map((item) => item['id']).whereType<int>().toList();
       if (layananIds.isEmpty) return;
-
-      final data = await _repository.getSlotTersedia(
-        tanggal: tanggal,
-        layananIds: layananIds,
-      );
-
+      final data = await _repository.getSlotTersedia(tanggal: tanggal, layananIds: layananIds);
       availableSlots.value = List<Map<String, dynamic>>.from(data['slots'] ?? []);
     } catch (e) {
       availableSlots.value = [];
-      Get.snackbar('Error', 'Gagal memuat slot: $e');
     } finally {
       isLoadingSlots.value = false;
     }
   }
 
-  /// Select date
   Future<void> selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -169,158 +150,93 @@ class CheckoutController extends GetxController {
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
-
     if (picked != null) {
       selectedDate.value = picked;
       await fetchSlots();
     }
   }
 
-  /// Select slot
   void selectSlot(Map<String, dynamic> slot) {
     selectedSlot.value = slot;
   }
 
-  /// Validate form
   bool validateForm() {
     if (cartItems.isEmpty) {
       Get.snackbar('Error', 'Keranjang kosong');
       return false;
     }
-
     if (selectedSlot.value == null) {
       Get.snackbar('Error', 'Pilih jam booking terlebih dahulu');
       return false;
     }
-
-    if (selectedPaymentMethod.value == 'BANK_TRANSFER' &&
-        (selectedBank.value.isEmpty || selectedBank.value == '')) {
-      Get.snackbar('Error', 'Pilih bank untuk transfer');
-      return false;
-    }
-
     return true;
   }
 
-  /// Process checkout
   Future<void> processCheckout() async {
     if (!validateForm()) return;
 
     try {
       isLoading.value = true;
 
-      // Prepare items for API
-      final items = cartItems
-          .map((item) {
-            final promoAktif = item['promo_aktif'];
-            double harga = 0;
+      final items = cartItems.map((item) {
+        final promoAktif = item['promo_aktif'];
+        double harga = 0;
+        if (promoAktif != null && promoAktif['harga_diskon'] != null) {
+          harga = _parseDouble(promoAktif['harga_diskon']);
+        } else if (item['harga'] != null) {
+          harga = _parseDouble(item['harga']);
+        }
+        return {
+          'layanan_id': item['id'],
+          'qty': _parseInt(item['quantity']) ?? 1,
+          'harga': harga,
+        };
+      }).toList();
 
-            if (promoAktif != null && promoAktif['harga_diskon'] != null) {
-              harga = _parseDouble(promoAktif['harga_diskon']);
-            } else if (item['harga'] != null) {
-              harga = _parseDouble(item['harga']);
-            }
-
-            final layananId = item['id'];
-            if (layananId == null) return null;
-
-            return {
-              'layanan_id': layananId,
-              'qty': _parseInt(item['quantity']) ?? 1,
-              'harga': harga,
-            };
-          })
-          .where((item) => item != null)
-          .toList();
-
-      if (items.isEmpty) {
-        Get.snackbar('Error', 'Tidak ada item valid untuk checkout');
-        return;
-      }
-
-      // Format date and time
-      final String formattedDate = DateFormat(
-        'yyyy-MM-dd',
-      ).format(selectedDate.value);
+      final String formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate.value);
       final String formattedTime = selectedSlot.value!['jam_mulai'] as String;
 
-      // Prepare payload
       final payload = {
         'tanggal_booking': formattedDate,
         'jam_booking': formattedTime,
         'jenis_pembayaran': paymentType.value,
         'items': items,
         'payment_type': selectedPaymentMethod.value,
-        if (selectedPaymentMethod.value == 'BANK_TRANSFER')
-          'bank': selectedBank.value,
+        if (selectedPaymentMethod.value == 'BANK_TRANSFER') 'bank': selectedBank.value,
       };
 
-      // Submit booking
       final result = await _repository.createBooking(payload);
 
       if (result.status) {
-        // Clear cart after successful booking
+        // 1. Kosongkan Cart di Service (Storage)
         await CartService.clearCart();
 
-        // Navigate to payment page
+        // 2. REFRESH CartController agar UI Keranjang ikut kosong
+        if (Get.isRegistered<CartController>()) {
+          Get.find<CartController>().loadCart();
+        }
+
+        // 3. Navigasi ke pembayaran
         _navigateToPaymentPage(result);
       } else {
         Get.snackbar('Error', result.message);
       }
-    } catch (e, stackTrace) {
-      Get.snackbar('Error', 'Terjadi kesalahan: ${e.toString()} $stackTrace');
+    } catch (e) {
+      Get.snackbar('Error', 'Terjadi kesalahan: ${e.toString()}');
     } finally {
       isLoading.value = false;
     }
   }
 
-  /// Navigate to appropriate payment page
   void _navigateToPaymentPage(BookingModel? response) {
-    if (response == null) {
-      Get.snackbar('Error', 'Data booking tidak valid');
-      return;
-    }
-
-    try {
-      final paymentType = selectedPaymentMethod.value;
-
-      if (paymentType == 'GOPAY') {
-        Get.to(GopayPaymentPage(response: response.toJson()));
-      } else {
-        Get.to(PaymentPage(response: response.toJson())); // or response.toMap()
-      }
-    } catch (e, stackTrace) {
-      Get.snackbar('Error', 'Gagal membuka halaman pembayaran: $e $stackTrace');
+    if (response == null) return;
+    if (selectedPaymentMethod.value == 'GOPAY') {
+      Get.to(GopayPaymentPage(response: response.toJson()));
+    } else {
+      Get.to(PaymentPage(response: response.toJson()));
     }
   }
 
-  /// Get payment method name in Indonesian
-  String getPaymentMethodName(String method) {
-    switch (method) {
-      case 'BANK_TRANSFER':
-        return 'Transfer Bank';
-      case 'GOPAY':
-        return 'GoPay';
-      default:
-        return method;
-    }
-  }
-
-  /// Get bank name
-  String getBankName(String bank) {
-    switch (bank.toLowerCase()) {
-      case 'bri':
-        return 'Bank BRI';
-      case 'bni':
-        return 'Bank BNI';
-      case 'bca':
-        return 'Bank BCA';
-      case 'mandiri':
-        return 'Bank Mandiri';
-      case 'permata':
-        return 'Bank Permata';
-      default:
-        return bank.toUpperCase();
-    }
-  }
+  String getPaymentMethodName(String method) => method == 'BANK_TRANSFER' ? 'Transfer Bank' : 'GoPay';
+  String getBankName(String bank) => bank.toUpperCase();
 }

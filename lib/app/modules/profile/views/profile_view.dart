@@ -97,94 +97,97 @@ class ProfileView extends GetView<ProfileController> {
                   ],
                 ),
               ),
-              Container(
-                margin: EdgeInsets.all(16.sp),
-                padding: EdgeInsets.all(16.sp),
-                decoration: BoxDecoration(
-                  color: AppColor.white,
-                  borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(color: AppColor.primary),
-                ),
-                child: Column(
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        Get.to(EditProfileView());
-                      },
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.person,
-                            size: 22.sp,
-                            color: AppColor.primary,
-                          ),
-                          SizedBox(width: 12.w),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Ubah Profile',
-                                style: AppFont.semiBold(
-                                  14.sp,
-                                  color: AppColor.primary,
-                                ),
-                              ),
-                              Text(
-                                'Perbarui Profile Anda',
-                                style: AppFont.regular(12.sp),
-                              ),
-                            ],
-                          ),
-                          Spacer(),
-                          Icon(
-                            Icons.arrow_forward_ios,
-                            size: 16.sp,
-                            color: AppColor.primary,
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 12.h),
-                    GestureDetector(
-                      onTap: () {
-                        Get.to(EditPasswordView());
-                      },
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.password,
-                            size: 22.sp,
-                            color: AppColor.primary,
-                          ),
-                          SizedBox(width: 12.w),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Ubah password',
-                                style: AppFont.semiBold(
-                                  14.sp,
-                                  color: AppColor.primary,
-                                ),
-                              ),
-                              Text(
-                                'Ubah password anda',
-                                style: AppFont.regular(12.sp),
-                              ),
-                            ],
-                          ),
-                          Spacer(),
-                          Icon(
-                            Icons.arrow_forward_ios,
-                            size: 16.sp,
-                            color: AppColor.primary,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+              SizedBox(
+                height: 16.h,
               ),
+              // Container(
+              //   margin: EdgeInsets.all(16.sp),
+              //   padding: EdgeInsets.all(16.sp),
+              //   decoration: BoxDecoration(
+              //     color: AppColor.white,
+              //     borderRadius: BorderRadius.circular(12.r),
+              //     border: Border.all(color: AppColor.primary),
+              //   ),
+              //   child: Column(
+              //     children: [
+              //       GestureDetector(
+              //         onTap: () {
+              //           Get.to(EditProfileView());
+              //         },
+              //         child: Row(
+              //           children: [
+              //             Icon(
+              //               Icons.person,
+              //               size: 22.sp,
+              //               color: AppColor.primary,
+              //             ),
+              //             SizedBox(width: 12.w),
+              //             Column(
+              //               crossAxisAlignment: CrossAxisAlignment.start,
+              //               children: [
+              //                 Text(
+              //                   'Ubah Profile',
+              //                   style: AppFont.semiBold(
+              //                     14.sp,
+              //                     color: AppColor.primary,
+              //                   ),
+              //                 ),
+              //                 Text(
+              //                   'Perbarui Profile Anda',
+              //                   style: AppFont.regular(12.sp),
+              //                 ),
+              //               ],
+              //             ),
+              //             Spacer(),
+              //             Icon(
+              //               Icons.arrow_forward_ios,
+              //               size: 16.sp,
+              //               color: AppColor.primary,
+              //             ),
+              //           ],
+              //         ),
+              //       ),
+              //       SizedBox(height: 12.h),
+              //       GestureDetector(
+              //         onTap: () {
+              //           Get.to(EditPasswordView());
+              //         },
+              //         child: Row(
+              //           children: [
+              //             Icon(
+              //               Icons.password,
+              //               size: 22.sp,
+              //               color: AppColor.primary,
+              //             ),
+              //             SizedBox(width: 12.w),
+              //             Column(
+              //               crossAxisAlignment: CrossAxisAlignment.start,
+              //               children: [
+              //                 Text(
+              //                   'Ubah password',
+              //                   style: AppFont.semiBold(
+              //                     14.sp,
+              //                     color: AppColor.primary,
+              //                   ),
+              //                 ),
+              //                 Text(
+              //                   'Ubah password anda',
+              //                   style: AppFont.regular(12.sp),
+              //                 ),
+              //               ],
+              //             ),
+              //             Spacer(),
+              //             Icon(
+              //               Icons.arrow_forward_ios,
+              //               size: 16.sp,
+              //               color: AppColor.primary,
+              //             ),
+              //           ],
+              //         ),
+              //       ),
+              //     ],
+              //   ),
+              // ),
               GestureDetector(
                 onTap: () {
                   controller.logout();

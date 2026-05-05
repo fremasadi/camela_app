@@ -15,12 +15,10 @@ class CartService {
       }
 
       final List<dynamic> decoded = jsonDecode(cartString);
-      // pastikan tiap elemen berupa Map<String, dynamic>
       return decoded.map((item) => Map<String, dynamic>.from(item)).toList();
     } catch (e) {
-      // jika error parsing, hapus data rusak
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(_cartKey);
+      // JANGAN hapus data di sini jika hanya error parsing sementara
+      print("Error parsing cart items: $e");
       return [];
     }
   }
@@ -28,22 +26,17 @@ class CartService {
   /// Menambahkan item ke cart
   static Future<bool> addToCart(Map<String, dynamic> layanan) async {
     try {
-      if (layanan['id'] == null) {
-        return false;
-      }
+      if (layanan['id'] == null) return false;
 
       final cartItems = await getCartItems();
-
       final existingIndex = cartItems.indexWhere(
         (item) => item['id'] == layanan['id'],
       );
 
       if (existingIndex != -1) {
-        // Item sudah ada, tambah quantity
         final oldQty = (cartItems[existingIndex]['quantity'] ?? 1) as int;
         cartItems[existingIndex]['quantity'] = oldQty + 1;
       } else {
-        // Item baru
         final cartItem = {
           'id': layanan['id'],
           'name': layanan['name'] ?? 'Tanpa Nama',
@@ -61,9 +54,9 @@ class CartService {
       }
 
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_cartKey, jsonEncode(cartItems));
-      return true;
+      return await prefs.setString(_cartKey, jsonEncode(cartItems));
     } catch (e) {
+      print("Error addToCart: $e");
       return false;
     }
   }
@@ -83,8 +76,7 @@ class CartService {
       }
 
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_cartKey, jsonEncode(cartItems));
-      return true;
+      return await prefs.setString(_cartKey, jsonEncode(cartItems));
     } catch (e) {
       return false;
     }
@@ -97,8 +89,7 @@ class CartService {
       cartItems.removeWhere((item) => item['id'] == layananId);
 
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_cartKey, jsonEncode(cartItems));
-      return true;
+      return await prefs.setString(_cartKey, jsonEncode(cartItems));
     } catch (e) {
       return false;
     }
@@ -108,8 +99,7 @@ class CartService {
   static Future<bool> clearCart() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(_cartKey);
-      return true;
+      return await prefs.remove(_cartKey);
     } catch (e) {
       return false;
     }
@@ -150,13 +140,11 @@ class CartService {
     return total;
   }
 
-  /// Cek apakah item sudah ada di cart
   static Future<bool> isInCart(int layananId) async {
     final cartItems = await getCartItems();
     return cartItems.any((item) => item['id'] == layananId);
   }
 
-  /// Mendapatkan quantity item di cart
   static Future<int> getItemQuantity(int layananId) async {
     final cartItems = await getCartItems();
     final item = cartItems.firstWhere(

@@ -1,8 +1,8 @@
 class AppUrl {
   // 🌐 Base URL utama API kamu
-  static const String baseUrl = 'https://8736-208-76-40-198.ngrok-free.app/api';
+  static const String baseUrl = 'https://camela.underdog.my.id/api';
   static const String imageUrl =
-      'https://8736-208-76-40-198.ngrok-free.app/storage';
+      'https://camela.underdog.my.id/storage';
 
   // 🧩 Auth Endpoints
   static const String login = '$baseUrl/auth/login';

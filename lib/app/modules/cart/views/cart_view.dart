@@ -6,6 +6,7 @@ import 'package:camela_app/app/core/utils/price_formatter.dart';
 import 'package:camela_app/app/style/app_color.dart';
 import 'package:camela_app/app/style/app_font.dart';
 import '../controllers/cart_controller.dart';
+import '../../checkout/controllers/checkout_controller.dart';
 
 class CartView extends GetView<CartController> {
   const CartView({super.key});
@@ -166,8 +167,11 @@ class CartView extends GetView<CartController> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
-                          // Navigate ke checkout
+                        onPressed: () async {
+                          // Pastikan CheckoutController di-refresh saat navigasi
+                          if (Get.isRegistered<CheckoutController>()) {
+                            await Get.find<CheckoutController>().loadCartData();
+                          }
                           Get.toNamed('/checkout');
                         },
                         style: ElevatedButton.styleFrom(
@@ -332,36 +336,25 @@ class CartView extends GetView<CartController> {
                               onTap: () {
                                 controller.decrementQuantity(item['id']);
                               },
-                              child: Container(
-                                padding: EdgeInsets.all(6.sp),
-                                child: Icon(
-                                  Icons.remove,
-                                  size: 16.sp,
-                                  color: AppColor.primary,
-                                ),
+                              child: Padding(
+                                padding: EdgeInsets.all(4.sp),
+                                child: Icon(Icons.remove, size: 16.sp),
                               ),
                             ),
-                            Container(
-                              padding: EdgeInsets.symmetric(horizontal: 12.sp),
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 8.w),
                               child: Text(
                                 '$quantity',
-                                style: AppFont.bold(
-                                  14.sp,
-                                  color: AppColor.black,
-                                ),
+                                style: AppFont.bold(14.sp),
                               ),
                             ),
                             InkWell(
                               onTap: () {
                                 controller.incrementQuantity(item['id']);
                               },
-                              child: Container(
-                                padding: EdgeInsets.all(6.sp),
-                                child: Icon(
-                                  Icons.add,
-                                  size: 16.sp,
-                                  color: AppColor.primary,
-                                ),
+                              child: Padding(
+                                padding: EdgeInsets.all(4.sp),
+                                child: Icon(Icons.add, size: 16.sp),
                               ),
                             ),
                           ],
