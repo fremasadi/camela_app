@@ -73,7 +73,7 @@ class CheckoutView extends GetView<CheckoutController> {
                     Obx(() {
                       final slot = controller.selectedSlot.value;
                       final slotText = slot != null
-                          ? '${slot['jam_mulai']} - ${slot['jam_selesai']}'
+                          ? '${slot['jam_mulai']}'
                           : 'Pilih Jam';
                       return _buildInfoRow(
                         icon: Icons.access_time,
@@ -251,6 +251,25 @@ class CheckoutView extends GetView<CheckoutController> {
                         ),
                         Text(
                           '${controller.cartItems.length} layanan',
+                          style: AppFont.medium(14.sp, color: AppColor.black),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8.h),
+
+                    // Total Estimasi
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Total Estimasi',
+                          style: AppFont.regular(
+                            14.sp,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        Text(
+                          '${controller.totalEstimasi.value} menit',
                           style: AppFont.medium(14.sp, color: AppColor.black),
                         ),
                       ],
@@ -466,7 +485,7 @@ class CheckoutView extends GetView<CheckoutController> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  '${slot['jam_mulai']} - ${slot['jam_selesai']}',
+                                  '${slot['jam_mulai']}',
                                   style: AppFont.medium(
                                     14.sp,
                                     color: !tersedia

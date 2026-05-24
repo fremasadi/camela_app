@@ -93,13 +93,11 @@ class HistoryController extends GetxController {
     }
   }
 
-  /// ✅ SOLUSI: Normalisasi data history agar sesuai format payment page
+  /// Normalisasi data history agar sesuai format payment page
   Map<String, dynamic> _normalizeBookingData(Map<String, dynamic> historyItem) {
-    // Ambil data nested dari history
     final bookingData = historyItem['booking'] as Map<String, dynamic>? ?? {};
     final paymentData = historyItem['payment'] as Map<String, dynamic>? ?? {};
 
-    // Format ulang ke struktur yang sama dengan response create booking
     return {
       'status': true,
       'message': 'Continue payment from history',
@@ -111,13 +109,11 @@ class HistoryController extends GetxController {
         'jenis_pembayaran': historyItem['jenis_pembayaran'],
         'booking': {
           ...bookingData,
-          // Pastikan format konsisten
           'total_harga': bookingData['total_harga'].toString(),
           'total_pembayaran': bookingData['total_pembayaran'].toString(),
         },
         'payment': {
           ...paymentData,
-          // Pastikan format konsisten
           'gross_amount': paymentData['gross_amount'].toString(),
         },
       },
@@ -129,72 +125,26 @@ class HistoryController extends GetxController {
     final payment = booking['payment'];
 
     if (payment == null) {
-      Get.snackbar(
-        'Error',
-        'Data pembayaran tidak tersedia',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      Get.snackbar('Error', 'Data pembayaran tidak tersedia');
       return;
     }
 
-    // Cek apakah sudah dibayar
     if (payment['is_paid'] == true) {
-      Get.snackbar(
-        'Info',
-        'Pembayaran sudah selesai',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.blue,
-        colorText: Colors.white,
-      );
+      Get.snackbar('Info', 'Pembayaran sudah selesai');
       return;
     }
 
-    // Cek apakah sudah expired
-    if (payment['is_expired'] == true) {
-      Get.snackbar(
-        'Info',
-        'Pembayaran sudah kadaluarsa',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange,
-        colorText: Colors.white,
-      );
-      return;
-    }
-
-    // ✅ Normalisasi data sebelum navigasi
     final formattedResponse = _normalizeBookingData(booking);
-
-    print('Navigating to payment page with data: $formattedResponse');
-
     final paymentType = payment['payment_type'];
 
     try {
       if (paymentType == 'GOPAY') {
-        // ✅ Navigasi langsung dengan import class
-        print('gapay');
-        Get.to(
-          () => GopayPaymentPage(response: formattedResponse),
-          transition: Transition.rightToLeft,
-        );
+        Get.to(() => GopayPaymentPage(response: formattedResponse));
       } else {
-        // ✅ Navigasi langsung dengan import class
-        print('bank');
-        Get.to(
-          () => PaymentPage(response: formattedResponse),
-          transition: Transition.rightToLeft,
-        );
+        Get.to(() => PaymentPage(response: formattedResponse));
       }
     } catch (e) {
-      print('Navigation error: $e');
-      Get.snackbar(
-        'Error',
-        'Gagal membuka halaman pembayaran: $e',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      Get.snackbar('Error', 'Gagal membuka halaman pembayaran');
     }
   }
 
@@ -204,7 +154,8 @@ class HistoryController extends GetxController {
 
     return bookingHistory.where((booking) {
       final bookingData = booking['booking'] as Map<String, dynamic>? ?? {};
-      return bookingData['status'] == status;
+      // Perbaikan: gunakan toLowerCase agar tidak bug jika API mengirim "Pending"
+      return bookingData['status']?.toString().toLowerCase() == status;
     }).length;
   }
 }

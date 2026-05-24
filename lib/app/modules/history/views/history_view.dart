@@ -12,6 +12,25 @@ import '../controllers/history_controller.dart';
 class HistoryView extends GetView<HistoryController> {
   const HistoryView({super.key});
 
+  DateTime _parseBookingDate(dynamic rawDate) {
+    if (rawDate == null) return DateTime.now();
+
+    final value = rawDate.toString().trim();
+    final dateOnlyMatch = RegExp(r'^(\d{4})-(\d{2})-(\d{2})$').firstMatch(value);
+
+    // Keep booking dates as calendar dates so they do not shift across timezones.
+    if (dateOnlyMatch != null) {
+      return DateTime(
+        int.parse(dateOnlyMatch.group(1)!),
+        int.parse(dateOnlyMatch.group(2)!),
+        int.parse(dateOnlyMatch.group(3)!),
+      );
+    }
+
+    final parsed = DateTime.parse(value);
+    return parsed.isUtc ? parsed.toLocal() : parsed;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -192,10 +211,10 @@ class HistoryView extends GetView<HistoryController> {
     final payment = booking['payment'] as Map<String, dynamic>?;
     final bookingData = booking['booking'] as Map<String, dynamic>? ?? {};
     final status = bookingData['status']?.toString().toLowerCase() ?? 'pending';
+    final rawTanggalBooking =
+        booking['tanggal_booking'] ?? bookingData['tanggal_booking'];
 
-    final tanggalBooking = booking['tanggal_booking'] != null
-        ? DateTime.parse(booking['tanggal_booking'])
-        : DateTime.now();
+    final tanggalBooking = _parseBookingDate(rawTanggalBooking);
     final jamBooking = bookingData['jam_booking']?.toString() ?? '';
 
     return Container(

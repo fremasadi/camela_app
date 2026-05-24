@@ -48,15 +48,31 @@ class ChatView extends GetView<ChatController> {
                     ),
                   ),
                   SizedBox(width: 12.w),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Camela Assistant', style: AppFont.bold(16.sp)),
-                      Text(
-                        'Online',
-                        style: AppFont.regular(11.sp, color: Colors.green),
-                      ),
-                    ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Camela Assistant', style: AppFont.bold(16.sp)),
+                        Obx(
+                          () => Text(
+                            controller.isLoading.value
+                                ? 'Sedang mengetik...'
+                                : 'Online',
+                            style: AppFont.regular(
+                              11.sp,
+                              color: controller.isLoading.value
+                                  ? AppColor.primary
+                                  : Colors.green,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.refresh, color: Colors.grey, size: 20.sp),
+                    onPressed: () => controller.resetChat(),
+                    tooltip: 'Reset Chat',
                   ),
                 ],
               ),
@@ -145,86 +161,86 @@ class ChatView extends GetView<ChatController> {
             }),
 
             // Input Field
-            // Container(
-            //   padding: EdgeInsets.all(12.sp),
-            //   decoration: const BoxDecoration(
-            //     color: Colors.white,
-            //     border: Border(top: BorderSide(color: Colors.black12)),
-            //   ),
-            //   child: Row(
-            //     children: [
-            //       Expanded(
-            //         child: TextField(
-            //           controller: controller.textController,
-            //           decoration: InputDecoration(
-            //             hintText: 'Ketik pertanyaan Anda...',
-            //             hintStyle: AppFont.regular(
-            //               13.sp,
-            //               color: Colors.grey[400],
-            //             ),
-            //             filled: true,
-            //             fillColor: AppColor.greyBackground,
-            //             border: OutlineInputBorder(
-            //               borderRadius: BorderRadius.circular(24.r),
-            //               borderSide: BorderSide.none,
-            //             ),
-            //             contentPadding: EdgeInsets.symmetric(
-            //               horizontal: 16.w,
-            //               vertical: 12.h,
-            //             ),
-            //           ),
-            //           style: AppFont.regular(14.sp),
-            //           maxLines: null,
-            //           textInputAction: TextInputAction.send,
-            //           onSubmitted: (value) {
-            //             if (value.trim().isNotEmpty) {
-            //               controller.sendMessage(value);
-            //             }
-            //           },
-            //         ),
-            //       ),
-            //       SizedBox(width: 8.w),
-            //       Obx(
-            //         () => InkWell(
-            //           onTap: controller.isLoading.value
-            //               ? null
-            //               : () {
-            //                   if (controller.textController.text
-            //                       .trim()
-            //                       .isNotEmpty) {
-            //                     controller.sendMessage(
-            //                       controller.textController.text,
-            //                     );
-            //                   }
-            //                 },
-            //           child: Container(
-            //             padding: EdgeInsets.all(12.sp),
-            //             decoration: BoxDecoration(
-            //               color: controller.isLoading.value
-            //                   ? Colors.grey
-            //                   : AppColor.primary,
-            //               shape: BoxShape.circle,
-            //             ),
-            //             child: controller.isLoading.value
-            //                 ? SizedBox(
-            //                     width: 20.w,
-            //                     height: 20.h,
-            //                     child: const CircularProgressIndicator(
-            //                       color: Colors.white,
-            //                       strokeWidth: 2,
-            //                     ),
-            //                   )
-            //                 : Icon(
-            //                     Icons.send,
-            //                     color: Colors.white,
-            //                     size: 20.sp,
-            //                   ),
-            //           ),
-            //         ),
-            //       ),
-            //     ],
-            //   ),
-            // ),
+            Container(
+              padding: EdgeInsets.all(12.sp),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                border: Border(top: BorderSide(color: Colors.black12)),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: controller.textController,
+                      decoration: InputDecoration(
+                        hintText: 'Ketik pertanyaan Anda...',
+                        hintStyle: AppFont.regular(
+                          13.sp,
+                          color: Colors.grey[400],
+                        ),
+                        filled: true,
+                        fillColor: AppColor.greyBackground,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24.r),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 16.w,
+                          vertical: 12.h,
+                        ),
+                      ),
+                      style: AppFont.regular(14.sp),
+                      maxLines: null,
+                      textInputAction: TextInputAction.send,
+                      onSubmitted: (value) {
+                        if (value.trim().isNotEmpty) {
+                          controller.sendMessage(value);
+                        }
+                      },
+                    ),
+                  ),
+                  SizedBox(width: 8.w),
+                  Obx(
+                    () => InkWell(
+                      onTap: controller.isLoading.value
+                          ? null
+                          : () {
+                              if (controller.textController.text
+                                  .trim()
+                                  .isNotEmpty) {
+                                controller.sendMessage(
+                                  controller.textController.text,
+                                );
+                              }
+                            },
+                      child: Container(
+                        padding: EdgeInsets.all(12.sp),
+                        decoration: BoxDecoration(
+                          color: controller.isLoading.value
+                              ? Colors.grey
+                              : AppColor.primary,
+                          shape: BoxShape.circle,
+                        ),
+                        child: controller.isLoading.value
+                            ? SizedBox(
+                                width: 20.w,
+                                height: 20.h,
+                                child: const CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Icon(
+                                Icons.send,
+                                color: Colors.white,
+                                size: 20.sp,
+                              ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),

@@ -1,7 +1,7 @@
 import 'package:intl/intl.dart';
 
 String formatDateWithDay(String dateStr) {
-  DateTime date = DateTime.parse(dateStr);
+  DateTime date = DateTime.parse(dateStr).toLocal();
   final formatter = DateFormat('EEEE, d MMMM y', 'id_ID');
   return formatter.format(date);
 }

@@ -12,24 +12,25 @@ class CheckoutController extends GetxController {
   final BookingRepository _repository = BookingRepository();
 
   // Observable variables
-  var isLoading = false.obs;
-  var cartItems = <Map<String, dynamic>>[].obs;
-  var totalHarga = 0.0.obs;
-  var totalPembayaran = 0.0.obs;
+  final isLoading = false.obs;
+  final cartItems = <Map<String, dynamic>>[].obs;
+  final totalHarga = 0.0.obs;
+  final totalPembayaran = 0.0.obs;
+  final totalEstimasi = 0.obs; // Total estimasi dalam menit
 
   // Booking info
-  var selectedDate = DateTime.now().obs;
-  var selectedTime = TimeOfDay.now().obs;
-  var paymentType = 'lunas'.obs; // 'dp' or 'lunas'
+  final selectedDate = DateTime.now().obs;
+  final selectedTime = TimeOfDay.now().obs;
+  final paymentType = 'lunas'.obs; // 'dp' or 'lunas'
 
   // Slot tersedia
-  var availableSlots = <Map<String, dynamic>>[].obs;
-  var isLoadingSlots = false.obs;
-  var selectedSlot = Rxn<Map<String, dynamic>>();
+  final availableSlots = <Map<String, dynamic>>[].obs;
+  final isLoadingSlots = false.obs;
+  final selectedSlot = Rxn<Map<String, dynamic>>();
 
   // Payment method
-  var selectedPaymentMethod = 'BANK_TRANSFER'.obs;
-  var selectedBank = 'bri'.obs;
+  final selectedPaymentMethod = 'BANK_TRANSFER'.obs;
+  final selectedBank = 'bri'.obs;
 
   // Payment method options
   final List<String> paymentMethods = ['BANK_TRANSFER', 'GOPAY'];
@@ -41,12 +42,6 @@ class CheckoutController extends GetxController {
     loadCartData();
   }
 
-  @override
-  void onReady() {
-    super.onReady();
-    loadCartData();
-  }
-
   /// Load cart data and calculate totals
   Future<void> loadCartData() async {
     try {
@@ -54,6 +49,11 @@ class CheckoutController extends GetxController {
       final items = await CartService.getCartItems();
       cartItems.assignAll(items);
       calculateTotal();
+      
+      // Auto fetch slots for the initial date
+      if (cartItems.isNotEmpty) {
+        await fetchSlots();
+      }
     } catch (e) {
       Get.snackbar('Error', 'Gagal memuat data: $e');
       cartItems.clear();
@@ -62,12 +62,14 @@ class CheckoutController extends GetxController {
     }
   }
 
-  /// Calculate total price
+  /// Calculate total price and total estimation
   void calculateTotal() {
     double total = 0;
+    int estimasi = 0;
 
     try {
       for (var item in cartItems) {
+        // Calculate Price
         final promoAktif = item['promo_aktif'];
         double harga = 0;
 
@@ -79,13 +81,19 @@ class CheckoutController extends GetxController {
 
         final qty = _parseInt(item['quantity']) ?? 1;
         total += (harga * qty);
+
+        // Calculate Estimation
+        final itemEstimasi = _parseInt(item['estimasi_menit']) ?? 0;
+        estimasi += (itemEstimasi * qty);
       }
 
       totalHarga.value = total;
+      totalEstimasi.value = estimasi;
       calculatePaymentAmount();
     } catch (e) {
       totalHarga.value = 0;
       totalPembayaran.value = 0;
+      totalEstimasi.value = 0;
     }
   }
 
@@ -208,15 +216,10 @@ class CheckoutController extends GetxController {
       final result = await _repository.createBooking(payload);
 
       if (result.status) {
-        // 1. Kosongkan Cart di Service (Storage)
         await CartService.clearCart();
-
-        // 2. REFRESH CartController agar UI Keranjang ikut kosong
         if (Get.isRegistered<CartController>()) {
           Get.find<CartController>().loadCart();
         }
-
-        // 3. Navigasi ke pembayaran
         _navigateToPaymentPage(result);
       } else {
         Get.snackbar('Error', result.message);

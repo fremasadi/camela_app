@@ -1,7 +1,10 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../../core/utils/url.dart';
 
 class ChatController extends GetxController {
   final textController = TextEditingController();
@@ -9,13 +12,6 @@ class ChatController extends GetxController {
 
   var messages = <Map<String, dynamic>>[].obs;
   var isLoading = false.obs;
-
-  // ✅ GEMINI CONFIGURATION
-  late GenerativeModel _geminiModel;
-  late ChatSession _chatSession;
-
-  // ⚠️ GANTI DENGAN API KEY ANDA
-  final String _apiKey = 'AIzaSyDcq6hGjPzEg1hUfvkaNad7BEkGdTGDP10';
 
   // Quick replies
   final List<String> quickReplies = [
@@ -25,100 +21,12 @@ class ChatController extends GetxController {
     'Lokasi salon?',
   ];
 
-  // System prompt untuk Gemini (konteks salon)
-  final String _systemPrompt = '''
-Kamu adalah asisten virtual untuk Salon Camela di Surabaya. 
-Berikut informasi penting yang harus kamu ketahui:
-
-INFORMASI SALON:
-- Nama: Salon Camela
-- Lokasi: Jl. Brawijaya no. 4, Kediri, Indonesia, East Java
-- Telepon: (031) 1234-5678
-- WhatsApp: 0812-3456-7890
-
-JAM OPERASIONAL:
-- Senin - Jumat: 09.00 - 20.00 WIB
-- Sabtu - Minggu: 08.00 - 21.00 WIB
-- Tanggal Merah: 10.00 - 18.00 WIB
-
-LAYANAN & HARGA:
-Hair Care:
-- Potong Rambut: Rp 50.000
-- Creambath: Rp 75.000
-- Hair Coloring: Rp 200.000
-- Smoothing: Rp 450.000
-- Rebonding: Rp 500.000
-
-Nail Care:
-- Manicure: Rp 75.000
-- Pedicure: Rp 85.000
-- Gel Polish: Rp 150.000
-- Nail Art: Rp 100.000
-
-Paket Bundle:
-- Hair & Nail Care: Rp 350.000 (Hemat 30%)
-
-CARA BOOKING:
-1. Buka menu "Layanan" di aplikasi
-2. Pilih layanan yang diinginkan
-3. Pilih tanggal dan jam booking
-4. Lakukan pembayaran
-5. Selesai! Akan dapat konfirmasi
-
-METODE PEMBAYARAN:
-- Transfer Bank (BCA, BNI, BRI, Mandiri)
-- E-Wallet (GoPay, OVO, Dana, ShopeePay)
-- Cash (khusus walk-in)
-
-PROMO BULAN INI:
-- Diskon 20% untuk member baru
-- Gratis creambath setiap pembelian paket bundling
-- Cashback 50rb untuk transaksi di atas 500rb
-
-INSTRUKSI PENTING:
-- Jawab dengan ramah, profesional, dan informatif
-- Gunakan emoji secukupnya (jangan berlebihan)
-- Jawab dalam Bahasa Indonesia
-- Jika ditanya di luar konteks salon, arahkan kembali ke topik salon
-- Jika tidak tahu jawaban pasti, sarankan untuk menghubungi CS: 0812-3456-7890
-- Berikan jawaban singkat dan jelas (maksimal 3 paragraf)
-''';
-
-  // FAQ lokal sebagai fallback (jika Gemini error)
-  final Map<String, String> _localFallback = {
-    'jam':
-        'Salon Camela buka setiap hari:\n\n'
-        '• Senin - Jumat: 09.00 - 20.00 WIB\n'
-        '• Sabtu - Minggu: 08.00 - 21.00 WIB\n'
-        '• Tanggal Merah: 10.00 - 18.00 WIB',
-
-    'harga':
-        'Berikut daftar layanan dan harga:\n\n'
-        '💇 Hair Care: Rp 50.000 - Rp 500.000\n'
-        '💅 Nail Care: Rp 75.000 - Rp 150.000\n'
-        '🎁 Paket Bundle: Rp 350.000\n\n'
-        'Untuk detail lengkap, tanyakan ke saya!',
-
-    'booking':
-        'Cara booking:\n'
-        '1. Menu "Layanan" → Pilih layanan\n'
-        '2. Pilih tanggal & jam\n'
-        '3. Bayar → Selesai!\n\n'
-        'Booking 1-2 hari sebelumnya lebih baik!',
-
-    'lokasi':
-        '📍Jl. Brawijaya no. 4, Kediri, Indonesia, East Java\n'
-        '📞 (031) 1234-5678\n'
-        '📱 WA: 0812-3456-7890',
-  };
-
   @override
   void onInit() {
     super.onInit();
-    _initializeGemini();
     _addBotMessage(
       'Halo! 👋 Selamat datang di Camela Salon!\n\n'
-      'Saya assistant virtual bertenaga AI yang siap membantu Anda. '
+      'Saya assistant virtual yang siap membantu Anda. '
       'Ada yang bisa saya bantu hari ini?',
     );
   }
@@ -130,36 +38,8 @@ INSTRUKSI PENTING:
     super.onClose();
   }
 
-  /// ✅ Initialize Gemini AI
-  void _initializeGemini() {
-    try {
-      _geminiModel = GenerativeModel(
-        model: 'gemini-2.5-flash', // ✅ Model terbaru yang stabil
-        apiKey: _apiKey,
-        generationConfig: GenerationConfig(
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 500,
-        ),
-      );
-
-      // Start chat session dengan system prompt
-      _chatSession = _geminiModel.startChat(
-        history: [
-          Content.text(_systemPrompt),
-          Content.model([
-            TextPart('Baik, saya siap membantu sebagai asisten Salon Camela!'),
-          ]),
-        ],
-      );
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  /// ✅ Send message with Gemini integration
-  void sendMessage(String text) async {
+  /// Send message to Chatbot API
+  Future<void> sendMessage(String text) async {
     final trimmedText = text.trim();
     if (trimmedText.isEmpty) return;
 
@@ -173,58 +53,61 @@ INSTRUKSI PENTING:
     isLoading.value = true;
 
     try {
-      // ✅ Try Gemini AI first
-      final response = await _getGeminiResponse(trimmedText);
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
 
-      // Simulate typing delay untuk natural feel
-      await Future.delayed(const Duration(milliseconds: 500));
+      if (token == null) {
+        throw Exception('Token tidak ditemukan. Silakan login terlebih dahulu.');
+      }
 
-      _addBotMessage(response);
+      // Prepare history for API
+      // Limit history to last 20 messages as per documentation
+      final historyList = messages.length > 20
+          ? messages.sublist(messages.length - 20)
+          : messages.toList();
+
+      final history = historyList.map((msg) {
+        return {
+          'role': msg['isUser'] ? 'user' : 'assistant',
+          'content': msg['text'],
+        };
+      }).toList();
+
+      // Remove the last message (the one we just added) from history 
+      // because it's sent in the "message" field
+      if (history.isNotEmpty) history.removeLast();
+
+      final response = await http.post(
+        Uri.parse(AppUrl.chatbot),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode({
+          'message': trimmedText,
+          'history': history,
+        }),
+      );
+
+      final Map<String, dynamic> data = json.decode(response.body);
+
+      if (response.statusCode == 200 && data['status'] == true) {
+        final reply = data['data']['reply'];
+        _addBotMessage(reply);
+      } else {
+        throw Exception(data['message'] ?? 'Gagal memproses pesan');
+      }
     } catch (e) {
-      // ✅ Fallback to local FAQ if Gemini fails
-      final fallbackResponse = _getFallbackResponse(trimmedText);
-      await Future.delayed(const Duration(milliseconds: 300));
-      _addBotMessage(fallbackResponse);
+      debugPrint('Chatbot Error: $e');
+      _addBotMessage(
+        'Maaf, saya mengalami kendala teknis saat ini. 😅\n\n'
+        'Silakan hubungi kami via WhatsApp untuk bantuan langsung:\n'
+        '📱 WhatsApp: 0812-3456-7890',
+      );
     } finally {
       isLoading.value = false;
     }
-  }
-
-  /// ✅ Get response from Gemini AI
-  Future<String> _getGeminiResponse(String userMessage) async {
-    try {
-      final response = await _chatSession.sendMessage(
-        Content.text(userMessage),
-      );
-
-      final text = response.text?.trim();
-
-      if (text == null || text.isEmpty) {
-        throw Exception('Empty response from Gemini');
-      }
-
-      return text;
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  /// ✅ Fallback response (local FAQ)
-  String _getFallbackResponse(String userMessage) {
-    final message = userMessage.toLowerCase();
-
-    // Check keywords
-    for (var entry in _localFallback.entries) {
-      if (message.contains(entry.key)) {
-        return entry.value;
-      }
-    }
-
-    // Default fallback
-    return 'Maaf, saya mengalami kendala teknis 😅\n\n'
-        'Silakan hubungi CS kami untuk bantuan lebih lanjut:\n'
-        '📱 WhatsApp: 0812-3456-7890\n'
-        '📞 Telepon: (031) 1234-5678';
   }
 
   /// Add message to list
@@ -257,10 +140,9 @@ INSTRUKSI PENTING:
     return DateFormat('HH:mm').format(DateTime.now());
   }
 
-  /// ✅ Reset chat (optional feature)
+  /// Reset chat
   void resetChat() {
     messages.clear();
-    _initializeGemini(); // Restart session
     _addBotMessage('Chat direset! 🔄\n\nAda yang bisa saya bantu?');
   }
 }

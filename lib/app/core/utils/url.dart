@@ -13,5 +13,8 @@ class AppUrl {
   static const String layanan = '$baseUrl/layanan';
 
   // Booking
-  static const String booking = '$baseUrl/booking';
+  static const String booking = '$baseUrl/bookings';
+
+  // Chatbot
+  static const String chatbot = '$baseUrl/chatbot/message';
 }
